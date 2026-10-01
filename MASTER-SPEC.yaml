@@ -1,0 +1,2387 @@
+# ==============================================================================
+# RCS SENDER
+# MASTER SPEC-DRIVEN DEVELOPMENT
+# VERSION 5.2.0
+# ==============================================================================
+#
+# STATUS: EXECUTION READY
+#
+# SINGLE SOURCE OF TRUTH:
+#   MASTER-SPEC.yaml
+#
+# PRODUCT PRINCIPLE:
+#   SIMPLE OUTSIDE. ROBUST INSIDE.
+#
+# DEVELOPMENT MODEL:
+#
+#   SPEC
+#     -> WAVE
+#     -> INSPECT
+#     -> OFFICIAL DOCS
+#     -> PLAN
+#     -> IMPLEMENT
+#     -> TEST
+#     -> SECURITY CHECK
+#     -> FIX
+#     -> VALIDATE
+#     -> DOCUMENT
+#     -> CLOSE WAVE
+#
+# ==============================================================================
+
+spec:
+
+  # ============================================================================
+  # 00 — METADATA
+  # ============================================================================
+
+  metadata:
+
+    project_name: "RCS Sender"
+    version: "5.2.0"
+    status: "execution_ready"
+
+    default_language: "pt-BR"
+    initial_market: "Brazil"
+
+    methodology:
+      - "Spec Driven Development"
+      - "Waves"
+      - "Validation Loops"
+      - "Contract Testing"
+      - "Security by Design"
+      - "Documentation as Code"
+      - "Official Documentation First"
+
+    source_of_truth: true
+
+    change_policy:
+
+      full_rewrite_required: true
+
+      rule: >
+        Toda alteração arquitetural, funcional, operacional,
+        de segurança ou de integração relevante deve ser consolidada
+        neste documento.
+
+        Não criar documentos paralelos contraditórios.
+        Não manter patches permanentes.
+        Requisitos substituídos devem ser removidos.
+
+        MASTER-SPEC.yaml representa sempre o estado atual completo
+        do produto.
+
+
+  # ============================================================================
+  # 01 — PRODUCT VISION
+  # ============================================================================
+
+  product:
+
+    name: "RCS Sender"
+
+    vision: >
+      Plataforma profissional, simples e robusta para criação,
+      gerenciamento, envio e acompanhamento de mensagens e campanhas RCS
+      através de múltiplos provedores.
+
+    positioning: >
+      Camada independente de criação, gerenciamento e orquestração RCS,
+      desacoplada dos fornecedores de infraestrutura.
+
+    core_promise: >
+      O usuário trabalha com mensagens, contatos e campanhas.
+      O sistema absorve as diferenças técnicas entre providers.
+
+    architecture_style:
+      application: "modular_monolith"
+      integrations: "ports_and_adapters"
+      processing: "asynchronous"
+      providers: "multi_provider"
+
+    principles:
+      - "Provider independent"
+      - "Secure by default"
+      - "Message first"
+      - "Campaign driven"
+      - "Async by default for bulk work"
+      - "Observable"
+      - "Recoverable"
+      - "Maintainable"
+      - "Simple UI"
+      - "Official documentation is authority for external contracts"
+      - "No provider logic leaking into domain"
+
+
+  # ============================================================================
+  # 02 — PRODUCT SCOPE
+  # ============================================================================
+
+  scope:
+
+    core:
+      authentication: true
+      dashboard: true
+      contacts: true
+      audiences: true
+      message_library: true
+      message_builder: true
+      campaigns: true
+      integrations: true
+      provider_agents: true
+      webhook_processing: true
+      analytics: true
+      inbox_lite: true
+
+    future:
+      - "advanced_conversational_inbox"
+      - "journey_automation"
+      - "automatic_provider_routing"
+      - "cost_based_routing"
+      - "provider_failover"
+      - "A/B_testing"
+      - "advanced_segmentation"
+      - "AI_message_generation"
+      - "AI_reply_assistance"
+      - "public_API"
+      - "multi_workspace"
+
+    explicitly_not_core:
+      - "full CRM"
+      - "email marketing"
+      - "full WhatsApp platform"
+      - "full chatbot builder"
+      - "omnichannel CRM"
+      - "native mobile app"
+
+
+  # ============================================================================
+  # 03 — PRIMARY NAVIGATION
+  # ============================================================================
+
+  navigation:
+
+    items:
+      - id: "dashboard"
+        label: "Dashboard"
+
+      - id: "contacts"
+        label: "Contatos"
+
+      - id: "campaigns"
+        label: "Campanhas"
+
+      - id: "messages"
+        label: "Mensagens"
+
+      - id: "conversations"
+        label: "Conversas"
+
+      - id: "integrations"
+        label: "Integrações"
+
+      - id: "settings"
+        label: "Configurações"
+
+
+  # ============================================================================
+  # 04 — TECHNOLOGY STACK
+  # ============================================================================
+
+  technology:
+
+    monorepo:
+      package_manager: "pnpm"
+
+    frontend:
+      framework: "Next.js"
+      runtime: "React"
+      language: "TypeScript"
+      router: "App Router"
+
+      styling:
+        engine: "Tailwind CSS"
+
+      component_system:
+        base: "shadcn/ui"
+
+      icons:
+        library: "Lucide"
+
+      server_state:
+        library: "TanStack Query"
+
+      local_state:
+        library: "Zustand"
+
+      forms:
+        library: "React Hook Form"
+
+      validation:
+        library: "Zod"
+
+      internationalization:
+        library: "next-intl"
+        default: "pt-BR"
+        ready_for:
+          - "en"
+          - "es"
+
+    backend:
+      runtime: "Node.js"
+      language: "TypeScript"
+      API_style: "REST"
+      validation: "Zod"
+
+    database:
+      engine: "PostgreSQL"
+      production_hosting: "self_hosted_VPS"
+
+    queue:
+      broker: "Redis"
+      engine: "BullMQ"
+
+    observability:
+      logs: "Pino"
+      errors: "Sentry"
+      metrics: "Prometheus compatible"
+      tracing: "OpenTelemetry compatible"
+
+    tests:
+      unit: "Vitest"
+      integration: "Vitest"
+      E2E: "Playwright"
+
+
+  # ============================================================================
+  # 05 — LOCAL DEVELOPMENT
+  # ============================================================================
+
+  local_development:
+
+    docker_required: false
+    docker_desktop_required: false
+
+    required_tools:
+      - "Git"
+      - "Node.js LTS"
+      - "pnpm"
+
+    optional_tools:
+      - "VS Code"
+      - "Codex CLI"
+      - "Antigravity or equivalent development agent"
+
+    principle: >
+      O projeto deve ser desenvolvível e executável sem Docker local.
+
+      PostgreSQL e Redis podem utilizar serviços existentes ou
+      ambientes externos configurados por variáveis de ambiente.
+
+    expected_flow:
+      - "clone repository"
+      - "install dependencies"
+      - "copy .env.example"
+      - "configure development environment"
+      - "run migrations"
+      - "start services"
+      - "verify application"
+
+
+  # ============================================================================
+  # 06 — REPOSITORY ARCHITECTURE
+  # ============================================================================
+
+  repository:
+
+    type: "monorepo"
+
+    structure:
+
+      apps:
+        web:
+          purpose: "User interface"
+
+        api:
+          purpose: "HTTP application API"
+
+        worker:
+          purpose: "Asynchronous jobs"
+
+      packages:
+
+        database:
+          purpose: "Database access and migrations"
+
+        rcs_core:
+          purpose: "Canonical RCS contracts"
+
+        rcs_providers:
+          purpose: "Provider adapters"
+
+        messaging:
+          purpose: "Message domain"
+
+        campaigns:
+          purpose: "Campaign domain"
+
+        media:
+          purpose: "Media handling"
+
+        queue:
+          purpose: "Queue abstractions"
+
+        security:
+          purpose: "Security utilities"
+
+        validation:
+          purpose: "Shared validation"
+
+        observability:
+          purpose: "Logs metrics tracing"
+
+        ui:
+          purpose: "Shared design system"
+
+        config:
+          purpose: "Typed configuration"
+
+    backend_modules:
+      - "auth"
+      - "contacts"
+      - "audiences"
+      - "messages"
+      - "media"
+      - "campaigns"
+      - "providers"
+      - "agents"
+      - "webhooks"
+      - "conversations"
+      - "tracking"
+      - "optout"
+      - "analytics"
+      - "audit"
+
+    forbidden:
+      - "large main.ts business logic"
+      - "God services"
+      - "God controllers"
+      - "provider logic inside campaign module"
+      - "database queries inside React components"
+      - "provider API calls from browser"
+
+
+  # ============================================================================
+  # 07 — MODULE STANDARD
+  # ============================================================================
+
+  module_standard:
+
+    layers:
+
+      domain:
+        - "entities"
+        - "value_objects"
+        - "domain_events"
+        - "domain_services"
+        - "ports"
+
+      application:
+        - "commands"
+        - "queries"
+        - "use_cases"
+        - "DTOs"
+
+      infrastructure:
+        - "repositories"
+        - "database"
+        - "provider_adapters"
+        - "external_services"
+
+      presentation:
+        - "controllers"
+        - "routes"
+        - "schemas"
+
+    dependencies:
+
+      domain:
+        cannot_depend_on:
+          - "database"
+          - "provider SDK"
+          - "provider HTTP API"
+          - "React"
+
+      application:
+        can_depend_on:
+          - "domain"
+
+      infrastructure:
+        can_depend_on:
+          - "domain"
+          - "application"
+
+      presentation:
+        can_depend_on:
+          - "application"
+
+    maintainability:
+      target_file_lines: 300
+      mandatory_review_over_lines: 500
+
+
+  # ============================================================================
+  # 08 — PROVIDER INDEPENDENCE
+  # ============================================================================
+
+  provider_model:
+
+    provider_lock_in: false
+
+    principle: >
+      O domínio nunca trabalha diretamente com estruturas específicas
+      de Google, Infobip, Twilio, Sinch, Zenvia ou futuros fornecedores.
+
+    initial_targets:
+      - "google_rbm"
+      - "infobip"
+      - "twilio"
+      - "sinch"
+      - "zenvia"
+
+    future_provider_support:
+      enabled: true
+
+
+  # ============================================================================
+  # 09 — RCS PROVIDER PORT
+  # ============================================================================
+
+  rcs_provider_port:
+
+    interface: "RcsProvider"
+
+    connection:
+      - "validateCredentials"
+      - "testConnection"
+      - "getConnectionStatus"
+
+    provider:
+      - "getProviderMetadata"
+      - "getProviderCapabilities"
+      - "getProviderLimits"
+
+    agents:
+      - "listAgents"
+      - "getAgent"
+      - "getAgentCapabilities"
+
+    recipients:
+      optional:
+        - "checkEligibility"
+        - "getCapabilities"
+
+    messaging:
+      required:
+        - "send"
+
+      optional:
+        - "revoke"
+        - "getMessageStatus"
+
+    webhooks:
+      - "verifyWebhook"
+      - "parseWebhook"
+      - "normalizeEvent"
+
+    billing:
+      optional:
+        - "estimateCost"
+        - "normalizeBillingData"
+
+    health:
+      - "getHealth"
+
+    critical_rule: >
+      send() recebe CanonicalMessage.
+
+      Campaign Engine nunca recebe ou produz payload específico
+      de Google, Infobip, Twilio, Sinch ou Zenvia.
+
+
+  # ============================================================================
+  # 10 — PROVIDER REGISTRY
+  # ============================================================================
+
+  provider_registry:
+
+    required: true
+
+    responsibilities:
+      - "register adapters"
+      - "resolve provider"
+      - "expose credential schema"
+      - "expose capabilities"
+      - "expose limits"
+      - "expose environments"
+      - "expose health"
+      - "expose agents"
+
+    adapter_activation:
+
+      requirements:
+        - "official documentation review complete"
+        - "provider evidence document created"
+        - "contract tests passing"
+        - "connection test passing"
+        - "credential handling validated"
+        - "webhook validation tested"
+
+
+  # ============================================================================
+  # 11 — OFFICIAL DOCUMENTATION FIRST POLICY
+  # ============================================================================
+
+  provider_documentation_policy:
+
+    mandatory: true
+    blocking: true
+
+    principle: >
+      Nenhuma integração externa pode ser implementada,
+      corrigida ou atualizada exclusivamente com base em memória,
+      conhecimento interno do agente, exemplos antigos,
+      implementação de outro provider ou conteúdo deste SPEC.
+
+      Antes de trabalhar em uma integração, o agente DEVE consultar
+      a documentação oficial e atual do provider correspondente.
+
+    applies_to:
+
+      initial:
+        - "Google RCS for Business / RBM"
+        - "Infobip"
+        - "Twilio"
+        - "Sinch"
+        - "Zenvia"
+
+      future:
+        - "every future provider"
+        - "every external API integration"
+
+    authority_order:
+
+      1: "official API reference"
+      2: "official provider documentation"
+      3: "official SDK documentation"
+      4: "official security documentation"
+      5: "official changelog / release notes"
+      6: "official examples"
+
+    non_authoritative_sources:
+      - "blog posts"
+      - "Stack Overflow"
+      - "Reddit"
+      - "unofficial tutorials"
+      - "third-party repositories"
+      - "cached old documentation"
+      - "AI memory"
+
+    non_authoritative_rule: >
+      Fontes secundárias podem auxiliar troubleshooting e investigação,
+      mas nunca definir o contrato técnico da integração.
+
+    no_web_access_rule: >
+      Se o agente não possuir acesso à documentação oficial atual,
+      não deve inventar endpoints, autenticação, headers,
+      payloads, assinaturas, limites ou comportamentos.
+
+      Deve registrar a integração como bloqueada até obter
+      documentação oficial verificável.
+
+
+  # ============================================================================
+  # 12 — PROVIDER RESEARCH CHECKLIST
+  # ============================================================================
+
+  provider_research_checklist:
+
+    required_before_adapter_implementation: true
+
+    API:
+      verify:
+        - "current API base URL"
+        - "current API version"
+        - "supported endpoints"
+        - "HTTP methods"
+        - "required headers"
+        - "request schemas"
+        - "response schemas"
+        - "pagination"
+        - "regional endpoints"
+
+    authentication:
+      verify:
+        - "authentication method"
+        - "API key format"
+        - "OAuth flow"
+        - "service account requirements"
+        - "access token lifecycle"
+        - "refresh mechanism"
+        - "credential scopes"
+        - "credential rotation"
+        - "production versus sandbox credentials"
+
+    RCS:
+      verify:
+        - "agent creation"
+        - "agent verification"
+        - "agent launch"
+        - "sender requirements"
+        - "country restrictions"
+        - "carrier restrictions"
+        - "supported message types"
+        - "text limits"
+        - "rich card rules"
+        - "carousel rules"
+        - "media requirements"
+        - "suggested replies"
+        - "suggested actions"
+        - "recipient eligibility"
+        - "capability checks"
+        - "batch capability checks"
+        - "TTL"
+        - "expiration"
+        - "fallback behavior"
+
+    webhooks:
+      verify:
+        - "webhook registration"
+        - "callback URL requirements"
+        - "event types"
+        - "payload schemas"
+        - "signature headers"
+        - "signature algorithm"
+        - "raw body requirements"
+        - "timestamp validation"
+        - "nonce handling"
+        - "replay protection"
+        - "retry behavior"
+        - "timeout behavior"
+        - "expected HTTP responses"
+        - "event ordering guarantees"
+        - "duplicate delivery behavior"
+
+    security:
+      verify:
+        - "credential storage recommendations"
+        - "signature verification"
+        - "IP restrictions when documented"
+        - "TLS requirements"
+        - "secret rotation"
+        - "token expiration"
+        - "recommended authentication method"
+        - "production security recommendations"
+
+    limits:
+      verify:
+        - "rate limits"
+        - "quotas"
+        - "batch limits"
+        - "payload limits"
+        - "media limits"
+        - "recipient limits"
+        - "message limits"
+
+    errors:
+      verify:
+        - "HTTP status codes"
+        - "provider error codes"
+        - "retryable errors"
+        - "permanent errors"
+        - "rate limit errors"
+        - "authentication errors"
+        - "invalid recipient errors"
+
+    billing:
+      verify:
+        - "billing model"
+        - "billable events"
+        - "conversation rules when applicable"
+        - "provider categories"
+        - "country differences"
+        - "carrier differences when applicable"
+
+    compliance:
+      verify:
+        - "opt-in requirements"
+        - "opt-out requirements"
+        - "regional requirements"
+        - "promotional restrictions"
+        - "sender requirements"
+
+
+  # ============================================================================
+  # 13 — PROVIDER IMPLEMENTATION GATE
+  # ============================================================================
+
+  provider_implementation_gate:
+
+    blocking: true
+
+    sequence:
+
+      1: "identify provider"
+      2: "open current official documentation"
+      3: "inspect API reference"
+      4: "inspect authentication documentation"
+      5: "inspect RCS documentation"
+      6: "inspect webhook/callback documentation"
+      7: "inspect provider security documentation"
+      8: "inspect rate limits and quotas"
+      9: "inspect billing documentation when applicable"
+      10: "inspect current changelog/release notes"
+      11: "compare documentation against MASTER-SPEC"
+      12: "record discrepancies"
+      13: "update provider evidence"
+      14: "update capability matrix"
+      15: "design adapter"
+      16: "implement adapter"
+      17: "run contract tests"
+      18: "run security tests"
+      19: "test sandbox/test environment when available"
+      20: "validate real integration when credentials are available"
+      21: "update project documentation"
+
+    implementation_allowed_only_when:
+      documentation_review_completed: true
+      authentication_understood: true
+      message_contract_understood: true
+      webhook_contract_understood: true
+      limits_understood: true
+      error_model_understood: true
+      security_requirements_understood: true
+
+
+  # ============================================================================
+  # 14 — DOCUMENTATION FRESHNESS
+  # ============================================================================
+
+  provider_documentation_freshness:
+
+    principle: >
+      MASTER-SPEC define arquitetura e requisitos internos.
+
+      Para contratos externos mutáveis, a documentação oficial
+      atual do provider possui precedência.
+
+    changelog_check:
+      required: true
+
+    deprecated_API_detection:
+      required: true
+
+    deprecated_feature_use:
+      allowed: false
+
+    conflict_handling:
+
+      when_official_docs_conflict_with_spec:
+
+        actions:
+          - "stop affected implementation"
+          - "record discrepancy"
+          - "determine whether conflict affects architecture"
+          - "update provider specification"
+          - "update MASTER-SPEC when required"
+          - "update documentation"
+          - "resume implementation"
+
+    silent_assumption:
+      allowed: false
+
+
+  # ============================================================================
+  # 15 — PROVIDER EVIDENCE
+  # ============================================================================
+
+  provider_evidence:
+
+    required: true
+
+    directory:
+      path: "/docs/providers"
+
+    files:
+
+      google:
+        path: "/docs/providers/google-rbm.md"
+
+      infobip:
+        path: "/docs/providers/infobip.md"
+
+      twilio:
+        path: "/docs/providers/twilio.md"
+
+      sinch:
+        path: "/docs/providers/sinch.md"
+
+      zenvia:
+        path: "/docs/providers/zenvia.md"
+
+    each_file_must_record:
+      - "provider"
+      - "date reviewed"
+      - "official documentation references"
+      - "API version when applicable"
+      - "base URLs"
+      - "regional endpoints"
+      - "authentication method"
+      - "required credentials"
+      - "credential scopes"
+      - "endpoints used"
+      - "webhooks used"
+      - "signature verification"
+      - "supported message types"
+      - "message limits"
+      - "media limits"
+      - "rate limits"
+      - "known restrictions"
+      - "error handling"
+      - "billing behavior when documented"
+      - "implemented capabilities"
+      - "unsupported capabilities"
+      - "deprecated capabilities"
+      - "open questions"
+
+    security:
+      never_record_real_credentials: true
+      never_record_real_tokens: true
+      never_record_private_keys: true
+
+
+  # ============================================================================
+  # 16 — PROVIDER SECURITY
+  # ============================================================================
+
+  provider_security:
+
+    principle: >
+      Cada provider possui sua própria implementação de autenticação,
+      autorização, assinatura, token lifecycle e webhook verification
+      conforme documentação oficial.
+
+    adapter_responsibilities:
+      - "authentication"
+      - "credential validation"
+      - "request signing when required"
+      - "token lifecycle"
+      - "webhook verification"
+      - "provider error normalization"
+      - "rate limit normalization"
+
+    forbidden:
+      - "generic webhook signature assumptions"
+      - "generic authentication assumptions"
+      - "sharing credentials between providers"
+      - "logging provider secrets"
+      - "frontend provider authentication"
+      - "disabling signature verification"
+      - "assuming authentication parity between providers"
+      - "assuming webhook parity between providers"
+
+
+  # ============================================================================
+  # 17 — PROVIDER CAPABILITY MATRIX
+  # ============================================================================
+
+  provider_capability_matrix:
+
+    required: true
+    generated_from_verified_documentation: true
+
+    dimensions:
+
+      message_formats:
+        - "text"
+        - "media"
+        - "rich_card"
+        - "carousel"
+        - "file"
+        - "video"
+
+      actions:
+        - "open_url"
+        - "suggested_reply"
+        - "dial"
+        - "location"
+        - "calendar"
+        - "webview"
+
+      recipient:
+        - "eligibility"
+        - "capability_check"
+        - "bulk_reachability"
+
+      events:
+        - "sent"
+        - "delivered"
+        - "read"
+        - "failed"
+        - "received"
+        - "action_selected"
+        - "subscribe"
+        - "unsubscribe"
+
+      delivery:
+        - "provider_scheduling"
+        - "TTL"
+        - "delivery_window"
+
+      fallback:
+        - "SMS"
+        - "MMS"
+
+      billing:
+        - "cost_estimate"
+        - "billing_events"
+
+    rules:
+      never_assume_feature_support: true
+      validate_before_enqueue: true
+      unknown_means_unsupported_until_verified: true
+
+
+  # ============================================================================
+  # 18 — PROVIDER CONNECTIONS & AGENTS
+  # ============================================================================
+
+  integrations:
+
+    capabilities:
+      - "connect"
+      - "configure"
+      - "test"
+      - "set_default"
+      - "replace_credentials"
+      - "disconnect"
+      - "inspect_capabilities"
+      - "inspect_agents"
+      - "inspect_health"
+
+    production_activation:
+      requires_successful_test: true
+
+
+  provider_agents:
+
+    required: true
+
+    canonical_fields:
+      - "id"
+      - "provider_connection_id"
+      - "provider_agent_id"
+      - "display_name"
+      - "brand"
+      - "country"
+      - "region"
+      - "status"
+      - "provider_use_case"
+      - "billing_category"
+      - "capabilities"
+
+    campaign_validation:
+      required: true
+
+
+  # ============================================================================
+  # 19 — CAMPAIGN PURPOSE
+  # ============================================================================
+
+  campaign_purpose:
+
+    canonical_values:
+      - "marketing"
+      - "transactional"
+      - "authentication"
+      - "mixed"
+
+    provider_mapping:
+
+      google_rbm:
+        marketing: "promotional"
+        transactional: "transactional"
+        authentication: "otp"
+        mixed: "multi_use"
+
+      other_providers:
+        strategy: "adapter_defined_from_official_documentation"
+
+
+  # ============================================================================
+  # 20 — CONFIGURATION & SECRETS
+  # ============================================================================
+
+  configuration_policy:
+
+    environment_specific_values:
+      use_environment_configuration: true
+
+    examples:
+      - "APP_URL"
+      - "API_URL"
+      - "DATABASE_URL"
+      - "REDIS_URL"
+      - "MEDIA_BASE_URL"
+      - "WEBHOOK_BASE_URL"
+
+    repository:
+      real_env_file_committed: false
+      env_example_required: true
+      env_example_path: "/.env.example"
+
+    runtime:
+      fail_fast_when_required_configuration_missing: true
+
+
+  secrets:
+
+    static_application_secrets:
+      environment_variables_allowed: true
+      commit_to_git: false
+
+    dynamic_provider_credentials:
+      frontend_storage: false
+      local_storage: false
+      plaintext_database: false
+      logging: false
+      encrypted_database_storage: true
+
+      encryption:
+        authenticated_encryption: true
+        versioned_ciphertext: true
+        rotation_supported: true
+
+      UI:
+        mask_after_save: true
+        reveal_existing_secret: false
+
+
+  # ============================================================================
+  # 21 — DATABASE
+  # ============================================================================
+
+  database:
+
+    engine: "PostgreSQL"
+    production_location: "VPS"
+    public_access: false
+
+    entities:
+      users: {}
+      contacts: {}
+      contact_lists: {}
+      contact_list_members: {}
+      messages: {}
+      message_versions: {}
+      media_assets: {}
+      campaigns: {}
+      campaign_recipients: {}
+      provider_connections: {}
+      provider_credentials: {}
+      provider_agents: {}
+      provider_capabilities: {}
+      outbound_messages: {}
+      inbound_messages: {}
+      conversations: {}
+      tracked_links: {}
+      click_events: {}
+      webhook_events: {}
+      opt_outs: {}
+      audit_logs: {}
+
+    security:
+      least_privilege: true
+      application_superuser: false
+      encrypted_transport: true
+      parameterized_queries: true
+
+    migrations:
+      versioned: true
+
+    backup:
+      automated: true
+      encrypted: true
+      restore_test_required: true
+
+
+  # ============================================================================
+  # 22 — CONTACTS & AUDIENCES
+  # ============================================================================
+
+  contacts:
+
+    input:
+      manual: true
+      CSV: true
+      paste: true
+
+    normalization:
+      standard: "E.164"
+      default_country: "BR"
+
+    pipeline:
+      - "sanitize"
+      - "normalize"
+      - "validate"
+      - "deduplicate"
+      - "check_opt_out"
+      - "persist"
+
+
+  audiences:
+
+    list_management: true
+    contact_can_belong_to_multiple_lists: true
+    deleting_list_deletes_contact: false
+
+
+  # ============================================================================
+  # 23 — ELIGIBILITY
+  # ============================================================================
+
+  eligibility_service:
+
+    required: true
+    provider_independent: true
+
+    strategies:
+      provider_single_check: true
+      provider_bulk_check: true
+      provider_managed: true
+      send_and_normalize_result: true
+
+    rule: >
+      O método utilizado para cada provider deve ser derivado
+      da documentação oficial vigente.
+
+
+  # ============================================================================
+  # 24 — MESSAGE DOMAIN
+  # ============================================================================
+
+  messages:
+
+    reusable: true
+    versioned: true
+
+    principle: >
+      Mensagem é entidade canônica independente
+      de campanha e provider.
+
+    statuses:
+      - "draft"
+      - "active"
+      - "archived"
+
+
+  message_archetypes:
+
+    marketing:
+      - "launch"
+      - "offer"
+      - "promotion"
+      - "invitation"
+      - "reengagement"
+      - "recovery"
+      - "announcement"
+
+    transactional:
+      - "confirmation"
+      - "reminder"
+      - "status_update"
+      - "delivery_update"
+      - "appointment"
+      - "post_purchase"
+
+    authentication:
+      - "OTP"
+      - "verification"
+      - "password_reset"
+
+    mixed:
+      - "customer_journey"
+      - "transaction_plus_offer"
+
+
+  canonical_message:
+
+    formats:
+
+      MVP:
+        - "text"
+        - "rich_card"
+
+      architecture_ready:
+        - "media"
+        - "carousel"
+        - "file"
+
+
+  # ============================================================================
+  # 25 — MESSAGE BUILDER
+  # ============================================================================
+
+  message_builder:
+
+    fields:
+
+      media:
+        enabled: true
+
+      title:
+        enabled: true
+        live_counter: true
+
+      body:
+        enabled: true
+        live_counter: true
+
+      actions:
+        enabled: true
+
+      suggested_replies:
+        enabled: true
+
+    destinations:
+      - "WhatsApp"
+      - "landing_page"
+      - "website"
+      - "custom_URL"
+
+    validation:
+      realtime: true
+      provider_aware: true
+
+    preview:
+      required: true
+      live: true
+      device_style: "mobile"
+
+
+  # ============================================================================
+  # 26 — MEDIA SERVICE
+  # ============================================================================
+
+  media_service:
+
+    required: true
+
+    responsibilities:
+      - "upload"
+      - "validate MIME"
+      - "validate file size"
+      - "extract metadata"
+      - "store"
+      - "generate delivery URL"
+      - "validate provider compatibility"
+      - "cleanup unused assets"
+
+    security:
+      MIME_allowlist: true
+      real_MIME_detection: true
+      executable_uploads: false
+      generated_filename: true
+      path_traversal_protection: true
+
+
+  # ============================================================================
+  # 27 — CAMPAIGNS
+  # ============================================================================
+
+  campaigns:
+
+    states:
+      - "draft"
+      - "scheduled"
+      - "ready"
+      - "queued"
+      - "running"
+      - "paused"
+      - "completed"
+      - "cancelled"
+      - "expired"
+      - "failed"
+
+    creation_flow:
+      - "objective"
+      - "provider_and_agent"
+      - "audience"
+      - "message"
+      - "actions"
+      - "fallback"
+      - "schedule"
+      - "tracking"
+      - "preflight"
+      - "review"
+      - "confirm"
+
+    controls:
+      pause: true
+      resume: true
+      cancel: true
+      emergency_stop: true
+
+
+  # ============================================================================
+  # 28 — SCHEDULING / TTL / FALLBACK
+  # ============================================================================
+
+  scheduling:
+
+    supported: true
+    engine_owner: "RCS Sender"
+
+    modes:
+      - "send_now"
+      - "scheduled"
+
+    timezone:
+      required: true
+      default: "America/Sao_Paulo"
+
+
+  expiration:
+
+    supported: true
+
+    rule: >
+      Provider-specific TTL and expiration limits must come
+      from verified provider capability definitions.
+
+
+  fallback:
+
+    supported: true
+
+    initial_channel:
+      - "SMS"
+
+    strategies:
+      provider_native: true
+      application_orchestrated: "architecture_ready"
+
+
+  # ============================================================================
+  # 29 — PREFLIGHT
+  # ============================================================================
+
+  preflight:
+
+    required: true
+
+    validations:
+      - "provider_connected"
+      - "agent_active"
+      - "campaign_purpose_compatible"
+      - "message_valid"
+      - "media_valid"
+      - "provider_capabilities"
+      - "agent_capabilities"
+      - "regional_compatibility"
+      - "contacts_valid"
+      - "duplicates_removed"
+      - "opt_out_removed"
+      - "eligibility_strategy_resolved"
+      - "TTL_valid"
+      - "schedule_valid"
+      - "fallback_valid"
+
+    explicit_confirmation:
+      required: true
+
+
+  # ============================================================================
+  # 30 — CAMPAIGN ENGINE
+  # ============================================================================
+
+  campaign_engine:
+
+    provider_independent: true
+    asynchronous: true
+    browser_dependency: false
+
+    queue:
+      required: true
+
+    workers:
+      required: true
+
+    pipeline:
+      - "load_campaign"
+      - "validate_campaign_state"
+      - "validate_schedule"
+      - "validate_expiration"
+      - "resolve_provider"
+      - "resolve_agent"
+      - "load_recipient"
+      - "recheck_opt_out"
+      - "resolve_eligibility_strategy"
+      - "validate_capabilities"
+      - "check_idempotency"
+      - "load_canonical_message"
+      - "prepare_media"
+      - "create_tracking_links"
+      - "provider_adapter_translate"
+      - "provider_adapter_send"
+      - "normalize_result"
+      - "persist_result"
+      - "acknowledge_job"
+
+    controls:
+      concurrency: true
+      provider_rate_limit: true
+      pause: true
+      resume: true
+      cancel: true
+      emergency_stop: true
+
+
+  # ============================================================================
+  # 31 — RATE LIMIT / RETRY / IDEMPOTENCY
+  # ============================================================================
+
+  rate_limits:
+
+    provider_specific: true
+    derived_from_official_documentation: true
+
+    adaptive_backoff:
+      enabled: true
+
+
+  idempotency:
+
+    required: true
+
+    webhook:
+      provider_event_deduplication: true
+
+
+  retry:
+
+    temporary_error:
+      enabled: true
+      strategy: "exponential_backoff_with_jitter"
+
+    permanent_error:
+      retry: false
+
+    dead_letter_queue:
+      required: true
+
+
+  # ============================================================================
+  # 32 — WEBHOOK ARCHITECTURE
+  # ============================================================================
+
+  webhooks:
+
+    route:
+      pattern: "/webhooks/rcs/{provider}"
+
+    configuration:
+      domain_hardcoded: false
+      public_URL_hardcoded: false
+
+    principle: >
+      Existe uma rota canônica de entrada, mas autenticação,
+      assinatura, parsing e validação são responsabilidades
+      específicas de cada adapter.
+
+    ingress_pipeline:
+      - "resolve_provider"
+      - "validate_request_size"
+      - "provider_specific_signature_verification"
+      - "persist_raw_event_securely"
+      - "deduplicate_ingress"
+      - "enqueue_processing"
+      - "return_provider_compatible_success_response"
+
+    worker_pipeline:
+      - "load_raw_event"
+      - "provider_parse"
+      - "normalize_event"
+      - "domain_idempotency"
+      - "persist_domain_event"
+      - "update_message"
+      - "update_campaign"
+      - "update_analytics"
+
+    canonical_events:
+      - "message.sent"
+      - "message.delivered"
+      - "message.read"
+      - "message.failed"
+      - "message.received"
+      - "action.selected"
+      - "contact.subscribe"
+      - "contact.unsubscribe"
+
+
+  # ============================================================================
+  # 33 — TRACKING / CONSENT / BILLING
+  # ============================================================================
+
+  URL_tracking:
+
+    application_tracking:
+      supported: true
+
+    provider_native_tracking:
+      use_when_available: true
+
+
+  consent:
+
+    opt_out:
+      global: true
+      persistent: true
+      provider_independent: true
+
+      enforced:
+        during_preflight: true
+        immediately_before_send: true
+
+
+  billing:
+
+    provider_defined: true
+
+    hardcoded_price_model:
+      allowed: false
+
+    estimate:
+      supported_when_provider_exposes_required_data: true
+
+
+  # ============================================================================
+  # 34 — SECURITY
+  # ============================================================================
+
+  security:
+
+    standards:
+      - "OWASP ASVS"
+      - "OWASP Top 10"
+
+    principles:
+      - "least privilege"
+      - "defense in depth"
+      - "secure by default"
+      - "fail closed"
+      - "zero trust at external boundaries"
+
+    API:
+      authentication: true
+      authorization: true
+      rate_limiting: true
+      request_size_limit: true
+      secure_headers: true
+
+    protections:
+      SQL_injection: true
+      XSS: true
+      command_injection: true
+      CSRF_when_applicable: true
+      SSRF: true
+      path_traversal: true
+      webhook_replay: true
+      forged_webhook: true
+
+    privacy:
+      LGPD: true
+      data_minimization: true
+      sensitive_log_redaction: true
+
+
+  # ============================================================================
+  # 35 — DESIGN SYSTEM
+  # ============================================================================
+
+  design_system:
+
+    name: "Purple Signal"
+    default_theme: "dark"
+
+    colors:
+
+      brand:
+        purple_400: "#C084FC"
+        purple_500: "#A855F7"
+        purple_600: "#9333EA"
+        purple_700: "#7E22CE"
+
+      dark:
+        background: "#09090B"
+        surface: "#111116"
+        elevated: "#18181F"
+        border: "#27272F"
+        text_primary: "#FAFAFA"
+        text_secondary: "#A1A1AA"
+
+      semantic:
+        success: "#22C55E"
+        warning: "#F59E0B"
+        error: "#EF4444"
+        info: "#3B82F6"
+
+    gradient:
+      primary: "linear-gradient(135deg,#7E22CE 0%,#A855F7 50%,#C084FC 100%)"
+
+    typography:
+      primary: "Inter"
+      mono: "Geist Mono"
+
+    accessibility:
+      target: "WCAG AA"
+
+
+  # ============================================================================
+  # 36 — DOCUMENTATION AS CODE
+  # ============================================================================
+
+  documentation:
+
+    required: true
+
+    principle: >
+      Documentação é parte do produto e deve evoluir junto
+      com implementação, arquitetura e integrações.
+
+    primary_language: "pt-BR"
+
+    repository_files:
+
+      README:
+        path: "/README.md"
+        required: true
+
+      environment_example:
+        path: "/.env.example"
+        required: true
+
+      security:
+        path: "/SECURITY.md"
+        required: true
+
+      changelog:
+        path: "/CHANGELOG.md"
+        required: true
+
+      contributing:
+        path: "/CONTRIBUTING.md"
+        recommended: true
+
+      docs:
+        path: "/docs"
+        required: true
+
+    docs_structure:
+      - "/docs/architecture.md"
+      - "/docs/local-development.md"
+      - "/docs/vps-installation.md"
+      - "/docs/configuration.md"
+      - "/docs/providers/"
+      - "/docs/webhooks.md"
+      - "/docs/security.md"
+      - "/docs/backup-restore.md"
+      - "/docs/troubleshooting.md"
+
+
+  # ============================================================================
+  # 37 — README
+  # ============================================================================
+
+  readme:
+
+    required: true
+
+    audience:
+      - "beginner"
+      - "non_developer"
+      - "developer"
+      - "VPS_operator"
+
+    banner:
+
+      required: true
+      design_system: "Purple Signal"
+      style: "dark technological professional clean"
+      suggested_path: "/docs/assets/readme-banner.png"
+
+    required_sections:
+      - "banner"
+      - "project title"
+      - "short description"
+      - "features"
+      - "architecture overview"
+      - "technology stack"
+      - "requirements"
+      - "quick start"
+      - "local installation"
+      - "environment configuration"
+      - "database configuration"
+      - "Redis configuration"
+      - "migrations"
+      - "starting application"
+      - "provider configuration"
+      - "webhook configuration"
+      - "production VPS installation"
+      - "domain and HTTPS"
+      - "process management"
+      - "backup"
+      - "updating application"
+      - "troubleshooting"
+      - "security"
+      - "project structure"
+
+    beginner_mode:
+
+      every_major_step:
+        - "explain objective"
+        - "provide exact command"
+        - "show expected result"
+        - "explain verification"
+        - "explain common errors"
+
+
+  # ============================================================================
+  # 38 — VPS DEPLOYMENT
+  # ============================================================================
+
+  deployment:
+
+    target: "VPS"
+
+    local_Docker_required: false
+
+    production_containerization:
+      mandatory: false
+      supported: true
+
+    initial_OS: "Ubuntu LTS"
+
+    requirements:
+      - "Node.js LTS"
+      - "pnpm"
+      - "process manager"
+      - "reverse proxy"
+      - "HTTPS"
+      - "firewall"
+
+    PostgreSQL:
+      strategy: "existing VPS PostgreSQL"
+
+    Redis:
+      required: true
+
+    domain:
+      required_during_development: false
+      hardcoded: false
+      configured_at_deployment: true
+
+    webhook_public_URL:
+      required_during_development: false
+      hardcoded: false
+      configured_at_deployment: true
+
+
+  # ============================================================================
+  # 39 — OBSERVABILITY & RELIABILITY
+  # ============================================================================
+
+  observability:
+
+    structured_logs:
+      enabled: true
+      format: "JSON"
+
+    metrics:
+      enabled: true
+
+    tracing:
+      enabled: true
+
+    correlation_id:
+      required: true
+
+    redaction:
+      - "credentials"
+      - "passwords"
+      - "tokens"
+      - "authorization_headers"
+
+
+  reliability:
+
+    graceful_shutdown:
+      API: true
+      worker: true
+
+    recover_jobs:
+      enabled: true
+
+    idempotent_consumers:
+      required: true
+
+    provider_isolation:
+      required: true
+
+
+  # ============================================================================
+  # 40 — TESTING
+  # ============================================================================
+
+  testing:
+
+    unit:
+      required: true
+
+    integration:
+      required: true
+
+    provider_contract:
+
+      required: true
+
+      tests:
+        - "credential validation"
+        - "authentication"
+        - "connection"
+        - "capability declaration"
+        - "agent discovery"
+        - "CanonicalMessage translation"
+        - "send"
+        - "response normalization"
+        - "error normalization"
+        - "webhook verification"
+        - "webhook parsing"
+        - "webhook normalization"
+
+    E2E:
+      required: true
+
+    security:
+      required: true
+
+
+  # ============================================================================
+  # 41 — CI/CD
+  # ============================================================================
+
+  CI_CD:
+
+    checks:
+      - "typecheck"
+      - "lint"
+      - "unit tests"
+      - "integration tests"
+      - "provider contract tests"
+      - "security scan"
+      - "dependency scan"
+      - "secret scan"
+      - "build"
+      - "documentation link check"
+
+    deployment:
+      repeatable: true
+
+    rollback:
+      required: true
+
+
+  # ============================================================================
+  # 42 — DOCUMENTATION LOOP
+  # ============================================================================
+
+  documentation_loop:
+
+    required_after_each_wave: true
+
+    inspect_changes:
+      - "environment variable"
+      - "dependency"
+      - "command"
+      - "module"
+      - "provider behavior"
+      - "provider documentation"
+      - "authentication"
+      - "webhook"
+      - "security requirement"
+      - "deployment requirement"
+      - "installation procedure"
+
+    update_when_affected:
+      - "README.md"
+      - ".env.example"
+      - "docs/"
+      - "docs/providers/"
+      - "SECURITY.md"
+      - "CHANGELOG.md"
+
+    acceptance:
+      documentation_matches_code: true
+      obsolete_commands_removed: true
+      beginner_installation_remains_valid: true
+
+
+  # ============================================================================
+  # 43 — EXECUTION INSTRUCTIONS
+  # ============================================================================
+
+  execution:
+
+    autonomy_mode: "high"
+
+    principle: >
+      O agente executa autonomamente decisões já cobertas pelo SPEC.
+
+      Para qualquer integração externa, autonomia não elimina
+      a obrigação de consultar documentação oficial.
+
+    before_each_wave:
+      - "read MASTER-SPEC.yaml"
+      - "identify current wave"
+      - "inspect repository"
+      - "inspect existing implementation"
+      - "identify dependencies"
+      - "identify documentation impact"
+      - "produce implementation plan"
+
+    provider_wave_additional_steps:
+      - "identify provider"
+      - "read official API documentation"
+      - "read authentication documentation"
+      - "read webhook documentation"
+      - "read security documentation"
+      - "read current changelog"
+      - "update provider evidence"
+      - "compare docs against capability matrix"
+
+    implementation_loop:
+
+      1: "inspect"
+      2: "research official docs when external integration is involved"
+      3: "plan"
+      4: "implement"
+      5: "typecheck"
+      6: "lint"
+      7: "unit test"
+      8: "integration test"
+      9: "provider contract test when applicable"
+      10: "security check"
+      11: "inspect result"
+      12: "fix"
+      13: "retest"
+      14: "validate acceptance"
+      15: "update documentation"
+      16: "validate documentation"
+      17: "close wave"
+
+    forbidden:
+      - "invent API endpoints"
+      - "invent authentication mechanisms"
+      - "invent webhook signatures"
+      - "invent provider capabilities"
+      - "use AI memory as provider authority"
+      - "skip official provider documentation"
+      - "skip failing tests"
+      - "disable security controls to pass tests"
+      - "bypass provider abstraction"
+      - "commit secrets"
+      - "hardcode provider credentials"
+      - "hardcode production domain"
+      - "hardcode webhook base URL"
+      - "require Docker locally"
+
+
+  # ============================================================================
+  # 44 — WAVES
+  # ============================================================================
+
+  waves:
+
+    wave_0:
+      name: "Environment & Spec Validation"
+
+      tasks:
+        - "validate Git"
+        - "validate Node.js LTS"
+        - "validate pnpm"
+        - "validate repository"
+        - "validate environment configuration strategy"
+        - "validate PostgreSQL availability"
+        - "validate Redis strategy"
+
+      not_required:
+        - "Docker"
+        - "Docker Desktop"
+        - "production domain"
+        - "production webhook URL"
+        - "production provider credentials"
+
+      gate:
+        blocking: true
+
+
+    wave_1:
+      name: "Engineering Foundation"
+
+      deliverables:
+        - "monorepo"
+        - "web"
+        - "API"
+        - "worker"
+        - "shared packages"
+        - "typed config"
+        - "logging"
+        - "health checks"
+        - ".env.example"
+        - "initial README"
+
+
+    wave_2:
+      name: "Security Foundation"
+
+      deliverables:
+        - "authentication"
+        - "authorization"
+        - "sessions"
+        - "rate limiting"
+        - "credential encryption"
+        - "audit foundation"
+        - "security headers"
+        - "SECURITY.md"
+
+
+    wave_3:
+      name: "Purple Signal Design System"
+
+      deliverables:
+        - "design tokens"
+        - "dark theme"
+        - "AppShell"
+        - "navigation"
+        - "forms"
+        - "tables"
+        - "dialogs"
+        - "README banner"
+
+
+    wave_4:
+      name: "Provider Core"
+
+      deliverables:
+        - "RcsProvider"
+        - "ProviderRegistry"
+        - "CapabilityMatrix"
+        - "CanonicalEvent"
+        - "CanonicalError"
+        - "encrypted provider credentials"
+        - "provider evidence framework"
+
+
+    wave_5:
+      name: "Mock Provider"
+
+      deliverables:
+        - "MockRcsProvider"
+        - "success scenarios"
+        - "failure scenarios"
+        - "webhook simulator"
+        - "provider contract tests"
+
+
+    wave_6:
+
+      name: "First Real Provider Proof"
+
+      documentation_first:
+        mandatory: true
+        blocking: true
+
+      sequence:
+        - "select first provider"
+        - "read current official documentation"
+        - "create provider evidence"
+        - "map authentication"
+        - "map API"
+        - "map messages"
+        - "map webhook"
+        - "map security"
+        - "map limits"
+        - "map errors"
+        - "implement adapter"
+        - "contract test"
+        - "real provider test"
+
+      deliverables:
+        - "one real provider adapter"
+        - "agent connection"
+        - "rich card translation"
+        - "real device send"
+        - "real webhook"
+        - "canonical event"
+        - "provider evidence document"
+
+      gate:
+        blocking: true
+
+
+    wave_7:
+      name: "Contacts & Audiences"
+
+    wave_8:
+      name: "Eligibility Engine"
+
+    wave_9:
+      name: "Media Service"
+
+    wave_10:
+      name: "Message Domain"
+
+    wave_11:
+      name: "Message Library"
+
+    wave_12:
+      name: "Message Builder"
+
+    wave_13:
+      name: "Campaign Domain"
+
+    wave_14:
+      name: "Scheduling, Expiration & Fallback"
+
+    wave_15:
+      name: "Campaign Engine"
+
+    wave_16:
+      name: "Webhook & Tracking"
+
+    wave_17:
+      name: "Inbox Lite"
+
+
+    wave_18:
+
+      name: "Additional Provider Adapters"
+
+      documentation_first:
+        mandatory: true
+        blocking: true
+
+      targets:
+        - "Google RBM"
+        - "Infobip"
+        - "Twilio"
+        - "Sinch"
+        - "Zenvia"
+
+      rule: >
+        Cada provider deve passar individualmente pelo
+        Provider Implementation Gate.
+
+        Nenhum adapter pode copiar autenticação, webhook,
+        limites ou payload de outro provider por suposição.
+
+
+    wave_19:
+      name: "Analytics & Billing"
+
+    wave_20:
+      name: "Observability"
+
+    wave_21:
+      name: "Production Hardening"
+
+
+    wave_22:
+
+      name: "Documentation & Deployment Validation"
+
+      objective: >
+        Validar instalação limpa utilizando somente
+        documentação oficial do projeto.
+
+      deliverables:
+        - "final README"
+        - "final README banner"
+        - "local installation guide"
+        - "VPS installation guide"
+        - "provider guides"
+        - "webhook guide"
+        - "security guide"
+        - "backup and restore guide"
+        - "troubleshooting guide"
+        - "CHANGELOG"
+        - "validated .env.example"
+
+      validation:
+        clean_install_test: true
+        VPS_installation_dry_run: true
+        documentation_link_check: true
+        secret_scan: true
+        placeholder_check: true
+
+
+  # ============================================================================
+  # 45 — DEFINITION OF DONE
+  # ============================================================================
+
+  definition_of_done:
+
+    application:
+      - "user can authenticate"
+      - "provider can be connected"
+      - "contacts can be imported"
+      - "messages can be created"
+      - "campaign can be created"
+      - "campaign can be sent"
+      - "webhooks can be processed"
+      - "analytics can be viewed"
+
+    providers:
+      - "official documentation reviewed"
+      - "provider evidence created"
+      - "authentication validated"
+      - "API contract validated"
+      - "webhook contract validated"
+      - "security requirements validated"
+      - "rate limits mapped"
+      - "errors mapped"
+      - "contract tests passing"
+
+    architecture:
+      - "provider independent domain"
+      - "canonical message"
+      - "canonical event"
+      - "canonical error"
+      - "provider adapters isolated"
+      - "module boundaries respected"
+
+    security:
+      - "provider credentials encrypted"
+      - "PostgreSQL private"
+      - "Redis private"
+      - "authorization enforced"
+      - "webhooks verified"
+      - "security tests passing"
+
+    documentation:
+      - "README complete"
+      - "README banner complete"
+      - ".env.example complete"
+      - "local installation documented"
+      - "VPS installation documented"
+      - "provider documentation complete"
+      - "domain configuration documented"
+      - "HTTPS documented"
+      - "webhook configuration documented"
+      - "backup documented"
+      - "restore documented"
+      - "update procedure documented"
+      - "rollback documented"
+      - "troubleshooting documented"
+      - "SECURITY.md complete"
+      - "CHANGELOG maintained"
+
+    installation:
+      local_requires_Docker: false
+      beginner_installation_possible: true
+      VPS_installation_possible_from_documentation: true
+
+
+  # ============================================================================
+  # 46 — FINAL EXECUTION CONTRACT
+  # ============================================================================
+
+  final_execution_contract:
+
+    source_of_truth:
+      file: "MASTER-SPEC.yaml"
+      version: "5.2.0"
+
+    precedence:
+
+      1: "security"
+      2: "official external API contracts"
+      3: "canonical domain contracts"
+      4: "provider abstraction"
+      5: "product requirements"
+      6: "data integrity"
+      7: "architecture"
+      8: "design system"
+      9: "documentation"
+      10: "wave requirements"
+      11: "implementation details"
+
+    official_documentation_rule: >
+      Para APIs, SDKs, autenticação, webhooks, segurança,
+      limites, quotas, billing e comportamento externo,
+      documentação oficial atual é a autoridade.
+
+    freshness_rule: >
+      Antes de implementar cada provider, consultar novamente
+      sua documentação oficial e changelog.
+
+    assumption_rule: >
+      Nunca inventar comportamento de provider.
+
+      Capability não confirmada permanece desabilitada
+      até validação documental e técnica.
+
+    provider_rule: >
+      Providers são infraestrutura substituível.
+
+    webhook_rule: >
+      Cada adapter implementa autenticação e verificação
+      de webhook conforme contrato oficial do provider.
+
+    credential_rule: >
+      Credenciais reais nunca entram no Git,
+      frontend, README ou logs.
+
+    local_environment_rule: >
+      Docker e Docker Desktop não são requisitos
+      para desenvolvimento local.
+
+    deployment_rule: >
+      A aplicação será posteriormente implantada em VPS.
+
+    documentation_rule: >
+      Documentação é parte obrigatória da implementação.
+
+      Alterações técnicas devem atualizar a documentação
+      correspondente dentro da mesma Wave.
+
+    beginner_rule: >
+      Documentação deve assumir que o usuário pode nunca
+      ter instalado uma aplicação Node.js em VPS.
+
+    wave_rule: >
+      Uma Wave somente pode ser encerrada após implementação,
+      testes, segurança, documentação e critérios de aceite.
+
+    provider_wave_rule: >
+      Uma Wave envolvendo provider externo somente pode ser
+      encerrada após Official Documentation Review,
+      Provider Evidence, implementação, contract tests,
+      security tests e validação da integração aplicável.
+
+    final_principle: >
+      Build a professional RCS platform that is simple to use,
+      modular to maintain, secure to operate, provider-independent,
+      documented from authoritative sources, deployable to a VPS
+      without local Docker requirements, and maintainable without
+      dependency on undocumented assumptions.
