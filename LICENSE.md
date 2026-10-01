@@ -1,6 +1,6 @@
 # Licença RCS Sender — cópia permitida, alterações e venda proibidas
 
-Copyright © 2029 Ricardo Soares. Todos os direitos reservados, exceto os concedidos expressamente abaixo.
+Copyright © 2026 Ricardo Soares. Todos os direitos reservados, exceto os concedidos expressamente abaixo.
 
 Esta licença se aplica ao código, à documentação e aos materiais originais do projeto RCS Sender disponibilizados neste repositório (o “Produto”). Componentes de terceiros mantêm suas próprias licenças.
 
