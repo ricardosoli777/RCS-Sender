@@ -4,3 +4,4 @@ O RCS Sender será um monólito modular em um monorepo pnpm. `apps/web` apresent
 
 Nesta primeira etapa, apenas a estrutura, configuração, logs e health checks foram criados. Os módulos de domínio, repositórios, migrações e adaptadores serão acrescentados nas waves definidas em `MASTER-SPEC.yaml`.
 
+O pacote `@rcs/security` fornece criptografia autenticada AES-256-GCM para credenciais futuras. O texto cifrado inclui versão da chave, nonce e tag; o contexto da conexão é autenticado junto com o conteúdo. A persistência e a rotação operacional das chaves ainda não estão integradas à API.
