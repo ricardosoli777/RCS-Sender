@@ -8,7 +8,7 @@ function dependencies(dbAvailable: boolean, redisAvailable: boolean) {
     if (!dbAvailable) throw new Error('database unavailable');
     return { rows: [{ '?column?': 1 }] };
   } } as unknown as Pool;
-  const redis = { ping: async () => {
+  const redis = { defineCommand: () => undefined, ping: async () => {
     if (!redisAvailable) throw new Error('redis unavailable');
     return 'PONG';
   } } as unknown as Redis;
@@ -28,3 +28,4 @@ describe('health', () => {
     await unavailable.close();
   });
 });
+
