@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { loadServerConfig } from '@rcs/config';
 import { createLogger } from '@rcs/observability';
 

@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { loadServerConfig } from '@rcs/config';
 import { createApp } from './app.js';
 
@@ -23,4 +23,3 @@ try {
   await shutdown();
   process.exitCode = 1;
 }
-

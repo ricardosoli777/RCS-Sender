@@ -1,6 +1,6 @@
 import Fastify from 'fastify';
 import type { Pool } from 'pg';
-import type Redis from 'ioredis';
+import type { Redis } from 'ioredis';
 import { createLogger } from '@rcs/observability';
 
 export function createApp(deps: { db: Pool; redis: Redis }) {
@@ -19,4 +19,3 @@ export function createApp(deps: { db: Pool; redis: Redis }) {
 
   return app;
 }
-

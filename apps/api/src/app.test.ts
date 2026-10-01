@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Pool } from 'pg';
-import type Redis from 'ioredis';
+import type { Redis } from 'ioredis';
 import { createApp } from './app.js';
 
 function dependencies(dbAvailable: boolean, redisAvailable: boolean) {
@@ -26,4 +26,3 @@ describe('health', () => {
     await unavailable.close();
   });
 });
-
