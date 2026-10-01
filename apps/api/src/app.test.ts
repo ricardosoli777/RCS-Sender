@@ -18,7 +18,9 @@ function dependencies(dbAvailable: boolean, redisAvailable: boolean) {
 describe('health', () => {
   it('reports readiness only while both dependencies respond', async () => {
     const ready = createApp(dependencies(true, true));
-    expect((await ready.inject('/health/ready')).statusCode).toBe(200);
+    const response = await ready.inject('/health/ready');
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['x-content-type-options']).toBe('nosniff');
     await ready.close();
 
     const unavailable = createApp(dependencies(true, false));
