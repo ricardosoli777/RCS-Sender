@@ -1,3 +1,5 @@
+![Banner RCS Sender em tons de roxo, com ondas de sinal e balões de mensagem](docs/assets/readme-banner.png)
+
 # RCS Sender
 
 Plataforma de mensagens e campanhas RCS independente de provedores. O projeto está na fase de fundação: **ainda não envia campanhas nem está pronto para produção**. A especificação completa está em [MASTER-SPEC.yaml](MASTER-SPEC.yaml).
@@ -59,4 +61,4 @@ docs/          documentação operacional e de arquitetura
 
 ## Segurança e contribuições
 
-Consulte [SECURITY.md](SECURITY.md) antes de relatar vulnerabilidades ou lidar com segredos. Mudanças devem respeitar a especificação e incluir teste e documentação quando alterarem comportamento. O projeto ainda não declarou uma licença de distribuição.
+Consulte [SECURITY.md](SECURITY.md) antes de relatar vulnerabilidades ou lidar com segredos. Contribuições que alterem o produto dependem de autorização expressa do titular. A [licença própria](LICENSE.md) permite cópias integrais gratuitas e proíbe alterações e venda do produto.
