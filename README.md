@@ -39,6 +39,8 @@ pnpm dev
 
 Abra `http://localhost:3000`. Para verificar a API, acesse `http://localhost:3001/health/live` e `http://localhost:3001/health/ready`. O segundo responde 503 quando PostgreSQL ou Redis não estão disponíveis.
 
+Para validar código e testes, rode `pnpm build`, `pnpm typecheck`, `pnpm lint` e `pnpm test`. O workflow de CI executa esses comandos no GitHub a cada push ou pull request.
+
 **Estado desta wave:** não há migrações de banco nem configuração de provedor ainda. Esses passos serão incluídos quando os respectivos módulos forem implementados. Não trate a página inicial como painel funcional.
 
 ## Configuração e instalação
@@ -58,4 +60,3 @@ docs/          documentação operacional e de arquitetura
 ## Segurança e contribuições
 
 Consulte [SECURITY.md](SECURITY.md) antes de relatar vulnerabilidades ou lidar com segredos. Mudanças devem respeitar a especificação e incluir teste e documentação quando alterarem comportamento. O projeto ainda não declarou uma licença de distribuição.
-
