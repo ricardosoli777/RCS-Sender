@@ -8,3 +8,4 @@
 - Banner Purple Signal para o README e licença própria de cópia permitida.
 - Pacote de criptografia autenticada e versionada para futuras credenciais de provedores.
 - Cabeçalhos de segurança e limite global de requisições na API.
+- Dependências fixadas em `pnpm-lock.yaml` para instalações reproduzíveis.
