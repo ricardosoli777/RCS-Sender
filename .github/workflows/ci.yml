@@ -15,12 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: pnpm install --no-frozen-lockfile
-      - run: |
-          echo LOCK_BEGIN
-          base64 -w0 pnpm-lock.yaml
-          echo
-          echo LOCK_END
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm lint
