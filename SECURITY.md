@@ -6,6 +6,8 @@ Esta versão é uma fundação em desenvolvimento, sem autenticação nem autori
 
 O pacote `@rcs/security` cifra dados com AES-256-GCM e suporta versões de chave para rotação futura. A aplicação ainda não armazena credenciais de provedores. A chave mestra deverá ser configurada fora do Git quando o armazenamento for implementado.
 
+O mesmo pacote armazena senhas com `scrypt`, sal aleatório e parâmetros fortes. A migração inicial cria tabelas de usuários, sessões e auditoria, mas os endpoints de login e autorização ainda não estão ativos.
+
 A API aplica cabeçalhos de segurança com `@fastify/helmet`, limita o tamanho do corpo das requisições a 1 MiB e registra limite global por IP no Redis. Erros do Redis não liberam requisições limitadas. Os endpoints de health, destinados à infraestrutura, ficam fora do limite global. A API local escuta apenas em `127.0.0.1`; configuração de proxy confiável será definida para a VPS.
 
 Para relatar uma vulnerabilidade, use um canal privado com o mantenedor do repositório; não publique segredos ou detalhes exploráveis em uma issue pública.

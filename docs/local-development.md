@@ -29,6 +29,7 @@ Preencha `DATABASE_URL` e `REDIS_URL` em `.env`. Execute:
 
 ```powershell
 pnpm build
+pnpm db:migrate
 pnpm dev
 ```
 

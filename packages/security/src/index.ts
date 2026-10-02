@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+export { hashPassword, verifyPassword } from './password.js';
 
 const FORMAT = 'v1';
 const ALGORITHM = 'aes-256-gcm';
@@ -59,4 +60,3 @@ export class CredentialCipher {
     return this.encrypt(this.decrypt(serialized, context), context);
   }
 }
-

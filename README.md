@@ -36,6 +36,7 @@ Edite `.env` com URLs reais dos serviços de desenvolvimento. O arquivo é ignor
 
 ```powershell
 pnpm build
+pnpm db:migrate
 pnpm dev
 ```
 
@@ -43,7 +44,7 @@ Abra `http://localhost:3000`. Para verificar a API, acesse `http://localhost:300
 
 Para validar código e testes, rode `pnpm build`, `pnpm typecheck`, `pnpm lint` e `pnpm test`. O workflow de CI executa esses comandos no GitHub a cada push ou pull request.
 
-**Estado desta wave:** não há migrações de banco nem configuração de provedor ainda. Esses passos serão incluídos quando os respectivos módulos forem implementados. Não trate a página inicial como painel funcional.
+**Estado desta wave:** há apenas a migração inicial de usuários, sessões e auditoria. Login e configuração de provedor ainda não estão implementados. Não trate a página inicial como painel funcional.
 
 ## Configuração e instalação
 
