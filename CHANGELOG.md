@@ -10,3 +10,4 @@
 - Cabeçalhos de segurança e limite global de requisições na API.
 - Dependências fixadas em `pnpm-lock.yaml` para instalações reproduzíveis.
 - `@fastify/rate-limit` atualizado para 11.2.0, corrigindo o bypass por rotação de IPv6.
+- Teste de integração da prontidão com PostgreSQL e Redis temporários na CI.
