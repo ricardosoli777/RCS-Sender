@@ -21,6 +21,11 @@ jobs:
           name: pnpm-lock
           path: pnpm-lock.yaml
           retention-days: 1
+      - run: |
+          echo LOCK_BEGIN
+          base64 -w0 pnpm-lock.yaml
+          echo
+          echo LOCK_END
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm lint
