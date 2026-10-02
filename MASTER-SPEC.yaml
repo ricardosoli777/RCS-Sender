@@ -2014,6 +2014,11 @@ spec:
 
     wave_0:
       name: "Environment & Spec Validation"
+      execution_status: "partially_validated"
+      execution_notes:
+        - "Repository and toolchain validated by GitHub Actions."
+        - "PostgreSQL and Redis validated using temporary CI services."
+        - "Local development service availability remains to be confirmed."
 
       tasks:
         - "validate Git"
@@ -2037,6 +2042,17 @@ spec:
 
     wave_1:
       name: "Engineering Foundation"
+      execution_status: "completed"
+      validation_evidence:
+        code_commit: "d0b5396f792d4e68ddb72e5fe5c46f08f5047fee"
+        ci_run: 36946345552
+        result: "success"
+        checks:
+          - "frozen dependency installation"
+          - "build"
+          - "typecheck"
+          - "lint"
+          - "tests including PostgreSQL and Redis integration"
 
       deliverables:
         - "monorepo"
@@ -2053,6 +2069,20 @@ spec:
 
     wave_2:
       name: "Security Foundation"
+      execution_status: "in_progress"
+      implemented:
+        - "credential encryption with AES-256-GCM"
+        - "password hashing with scrypt"
+        - "rate limiting"
+        - "security headers"
+        - "initial users, sessions and audit schema with migrations"
+        - "SECURITY.md"
+      remaining:
+        - "authentication flow and login interface"
+        - "authorization enforcement"
+        - "session creation, validation, expiration and revocation"
+        - "audit event recording"
+        - "integrated security validation before closing the wave"
 
       deliverables:
         - "authentication"
@@ -2385,3 +2415,4 @@ spec:
       documented from authoritative sources, deployable to a VPS
       without local Docker requirements, and maintainable without
       dependency on undocumented assumptions.
+
