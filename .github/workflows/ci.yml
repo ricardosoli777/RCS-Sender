@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rcs_sender_test
+          POSTGRES_USER: rcs_test
+          POSTGRES_PASSWORD: ci_only_password
+        options: >-
+          --health-cmd "pg_isready -U rcs_test -d rcs_sender_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    env:
+      RUN_SERVICE_TESTS: '1'
+      DATABASE_URL: postgresql://rcs_test:ci_only_password@127.0.0.1:5432/rcs_sender_test
+      REDIS_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm typecheck:e2e
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

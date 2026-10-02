@@ -1,0 +1,17 @@
+{
+  "name": "@rcs/security",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "vitest": "^3.0.0"
+  }
+}

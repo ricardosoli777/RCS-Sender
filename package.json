@@ -1,0 +1,22 @@
+{
+  "name": "rcs-sender",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @rcs/web --filter @rcs/api --filter @rcs/worker dev",
+    "db:migrate": "pnpm --filter @rcs/database migrate",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "typecheck:e2e": "node node_modules/typescript/bin/tsc -p tsconfig.e2e.json",
+    "test": "pnpm -r test",
+    "test:e2e": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0",
+    "typescript": "^5.9.0"
+  }
+}

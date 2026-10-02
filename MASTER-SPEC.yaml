@@ -1,0 +1,2938 @@
+# ==============================================================================
+# RCS SENDER
+# MASTER SPEC-DRIVEN DEVELOPMENT
+# VERSION 5.3.0
+# ==============================================================================
+#
+# STATUS: EXECUTION READY
+#
+# SINGLE SOURCE OF TRUTH:
+#   MASTER-SPEC.yaml
+#
+# PRODUCT PRINCIPLE:
+#   SIMPLE OUTSIDE. ROBUST INSIDE.
+#
+# DEVELOPMENT MODEL:
+#
+#   SPEC
+#     -> WAVE
+#     -> INSPECT
+#     -> OFFICIAL DOCS
+#     -> PLAN
+#     -> IMPLEMENT
+#     -> TEST
+#     -> SECURITY CHECK
+#     -> FIX
+#     -> VALIDATE
+#     -> DOCUMENT
+#     -> CLOSE WAVE
+#
+# ==============================================================================
+
+spec:
+
+  # ============================================================================
+  # 00 — METADATA
+  # ============================================================================
+
+  metadata:
+
+    project_name: "RCS Sender"
+    version: "5.3.0"
+    status: "execution_ready"
+
+    default_language: "pt-BR"
+    initial_market: "Brazil"
+
+    methodology:
+      - "Spec Driven Development"
+      - "Waves"
+      - "Validation Loops"
+      - "Contract Testing"
+      - "Security by Design"
+      - "Documentation as Code"
+      - "Official Documentation First"
+      - "Workspace First Architecture"
+
+    source_of_truth: true
+
+    change_policy:
+
+      full_rewrite_required: true
+
+      rule: >
+        Toda alteração arquitetural, funcional, operacional,
+        de segurança ou integração relevante deve ser consolidada
+        neste MASTER-SPEC.
+
+        Não criar especificações paralelas contraditórias.
+        Não manter patches permanentes.
+        Requisitos substituídos devem ser removidos.
+
+        MASTER-SPEC.yaml representa sempre o estado atual completo
+        do produto.
+
+
+  # ============================================================================
+  # 01 — PRODUCT VISION
+  # ============================================================================
+
+  product:
+
+    name: "RCS Sender"
+
+    vision: >
+      Plataforma profissional, simples e robusta para criação,
+      gerenciamento, envio e acompanhamento de mensagens e campanhas RCS
+      através de múltiplos provedores.
+
+    positioning: >
+      Camada independente de criação, gerenciamento e orquestração RCS,
+      desacoplada dos fornecedores de infraestrutura.
+
+    core_promise: >
+      O usuário trabalha com contatos, mensagens e campanhas.
+      O sistema absorve as diferenças técnicas entre providers.
+
+    architecture_style:
+      application: "modular_monolith"
+      integrations: "ports_and_adapters"
+      processing: "asynchronous"
+      providers: "multi_provider"
+      tenancy: "workspace_first"
+
+    principles:
+      - "Provider independent"
+      - "Workspace isolated"
+      - "Secure by default"
+      - "Message first"
+      - "Campaign driven"
+      - "Async by default for bulk work"
+      - "Observable"
+      - "Recoverable"
+      - "Maintainable"
+      - "Simple UI"
+      - "Official documentation is authority for external contracts"
+      - "No provider logic leaking into domain"
+      - "No cross-workspace data leakage"
+
+
+  # ============================================================================
+  # 02 — PRODUCT SCOPE
+  # ============================================================================
+
+  scope:
+
+    core:
+      authentication: true
+      workspaces: true
+      workspace_members: true
+      dashboard: true
+      contacts: true
+      audiences: true
+      message_library: true
+      message_builder: true
+      campaigns: true
+      integrations: true
+      provider_agents: true
+      webhook_processing: true
+      analytics: true
+      inbox_lite: true
+      audit: true
+
+    future:
+      - "advanced_conversational_inbox"
+      - "journey_automation"
+      - "automatic_provider_routing"
+      - "cost_based_routing"
+      - "provider_failover"
+      - "A/B_testing"
+      - "advanced_segmentation"
+      - "AI_message_generation"
+      - "AI_reply_assistance"
+      - "public_API"
+      - "advanced_multi_workspace_management"
+      - "billing_per_workspace"
+      - "agency_mode"
+
+    explicitly_not_core:
+      - "full CRM"
+      - "email marketing"
+      - "full WhatsApp platform"
+      - "full chatbot builder"
+      - "omnichannel CRM"
+      - "native mobile app"
+
+
+  # ============================================================================
+  # 03 — TENANCY MODEL
+  # ============================================================================
+
+  tenancy:
+
+    model: "workspace_first"
+
+    principle: >
+      Usuários não possuem diretamente campanhas, contatos,
+      mensagens ou integrações.
+
+      Recursos operacionais pertencem a um Workspace.
+
+      Usuários acessam Workspaces através de memberships.
+
+    initial_behavior: >
+      No primeiro cadastro, o sistema cria automaticamente
+      um Workspace padrão para o usuário.
+
+    relationships:
+
+      user_to_workspace: "many_to_many"
+
+      workspace_to_resources: "one_to_many"
+
+    workspace_owned_resources:
+      - "contacts"
+      - "contact_lists"
+      - "messages"
+      - "message_versions"
+      - "media_assets"
+      - "campaigns"
+      - "campaign_recipients"
+      - "provider_connections"
+      - "provider_credentials"
+      - "provider_agents"
+      - "provider_capabilities"
+      - "outbound_messages"
+      - "inbound_messages"
+      - "conversations"
+      - "tracked_links"
+      - "click_events"
+      - "webhook_events"
+      - "opt_outs"
+      - "analytics"
+
+    user_attribution_fields:
+      - "created_by_user_id"
+      - "updated_by_user_id"
+      - "scheduled_by_user_id"
+      - "started_by_user_id"
+      - "paused_by_user_id"
+      - "cancelled_by_user_id"
+
+    isolation:
+      mandatory: true
+      server_side: true
+      fail_closed: true
+
+    forbidden:
+      - "cross_workspace_query_without_explicit_system_scope"
+      - "client_controlled_workspace_authorization"
+      - "trusting workspace_id from request without membership validation"
+      - "global queries on tenant resources in normal user flows"
+
+
+  # ============================================================================
+  # 04 — USERS, WORKSPACES & MEMBERSHIPS
+  # ============================================================================
+
+  users:
+
+    fields:
+      - "id"
+      - "name"
+      - "email"
+      - "password_hash"
+      - "status"
+      - "created_at"
+      - "updated_at"
+
+    password_storage:
+      plaintext: false
+      secure_hash_required: true
+
+    statuses:
+      - "active"
+      - "disabled"
+
+
+  workspaces:
+
+    fields:
+      - "id"
+      - "name"
+      - "slug"
+      - "status"
+      - "created_by_user_id"
+      - "created_at"
+      - "updated_at"
+
+    statuses:
+      - "active"
+      - "suspended"
+      - "archived"
+
+
+  workspace_members:
+
+    relationship:
+      type: "many_to_many"
+
+    fields:
+      - "id"
+      - "workspace_id"
+      - "user_id"
+      - "role"
+      - "status"
+      - "joined_at"
+
+    roles:
+
+      owner:
+        permissions:
+          - "workspace.manage"
+          - "members.manage"
+          - "providers.manage"
+          - "contacts.manage"
+          - "messages.manage"
+          - "campaigns.manage"
+          - "campaigns.send"
+          - "analytics.view"
+          - "audit.view"
+
+      admin:
+        permissions:
+          - "providers.manage"
+          - "contacts.manage"
+          - "messages.manage"
+          - "campaigns.manage"
+          - "campaigns.send"
+          - "analytics.view"
+
+      operator:
+        permissions:
+          - "contacts.manage"
+          - "messages.manage"
+          - "campaigns.manage"
+          - "campaigns.send"
+          - "analytics.view"
+
+      viewer:
+        permissions:
+          - "contacts.view"
+          - "messages.view"
+          - "campaigns.view"
+          - "analytics.view"
+
+    default_initial_role:
+      workspace_creator: "owner"
+
+    statuses:
+      - "active"
+      - "removed"
+
+    foundation_member_invitation:
+      existing_registered_account_required: true
+      email_delivery_implemented: false
+
+    last_active_owner:
+      removal_or_demotion_allowed: false
+      validated_transactionally: true
+
+
+  # ============================================================================
+  # 05 — PRIMARY NAVIGATION
+  # ============================================================================
+
+  navigation:
+
+    workspace_selector:
+      enabled: true
+      display_when_multiple_workspaces: true
+
+    items:
+      - id: "dashboard"
+        label: "Dashboard"
+
+      - id: "contacts"
+        label: "Contatos"
+
+      - id: "campaigns"
+        label: "Campanhas"
+
+      - id: "messages"
+        label: "Mensagens"
+
+      - id: "conversations"
+        label: "Conversas"
+
+      - id: "integrations"
+        label: "Integrações"
+
+      - id: "settings"
+        label: "Configurações"
+
+
+  # ============================================================================
+  # 06 — TECHNOLOGY STACK
+  # ============================================================================
+
+  technology:
+
+    monorepo:
+      package_manager: "pnpm"
+
+    frontend:
+      framework: "Next.js"
+      runtime: "React"
+      language: "TypeScript"
+      router: "App Router"
+
+      styling:
+        engine: "Tailwind CSS"
+
+      component_system:
+        base: "shadcn/ui"
+
+      icons:
+        library: "Lucide"
+
+      server_state:
+        library: "TanStack Query"
+
+      local_state:
+        library: "Zustand"
+
+      forms:
+        library: "React Hook Form"
+
+      validation:
+        library: "Zod"
+
+      internationalization:
+        library: "next-intl"
+        default: "pt-BR"
+        ready_for:
+          - "en"
+          - "es"
+
+    backend:
+      runtime: "Node.js"
+      language: "TypeScript"
+      API_style: "REST"
+      validation: "Zod"
+
+    database:
+      engine: "PostgreSQL"
+      production_hosting: "self_hosted_VPS"
+
+    queue:
+      broker: "Redis"
+      engine: "BullMQ"
+
+    observability:
+      logs: "Pino"
+      errors: "Sentry"
+      metrics: "Prometheus compatible"
+      tracing: "OpenTelemetry compatible"
+
+    tests:
+      unit: "Vitest"
+      integration: "Vitest"
+      E2E: "Playwright"
+
+
+  # ============================================================================
+  # 07 — LOCAL DEVELOPMENT
+  # ============================================================================
+
+  local_development:
+
+    docker_required: false
+    docker_desktop_required: false
+
+    required_tools:
+      - "Git"
+      - "Node.js LTS"
+      - "pnpm"
+
+    optional_tools:
+      - "VS Code"
+      - "Codex CLI"
+      - "Antigravity or equivalent development agent"
+
+    principle: >
+      O projeto deve ser desenvolvível e executável sem Docker local.
+
+      PostgreSQL e Redis podem utilizar serviços existentes ou
+      ambientes externos configurados por variáveis de ambiente.
+
+    expected_flow:
+      - "clone repository"
+      - "install dependencies"
+      - "copy .env.example"
+      - "configure development environment"
+      - "run migrations"
+      - "start services"
+      - "verify application"
+
+
+  # ============================================================================
+  # 08 — REPOSITORY ARCHITECTURE
+  # ============================================================================
+
+  repository:
+
+    type: "monorepo"
+
+    structure:
+
+      apps:
+
+        web:
+          purpose: "User interface"
+
+        api:
+          purpose: "HTTP application API"
+
+        worker:
+          purpose: "Asynchronous jobs"
+
+      packages:
+
+        database:
+          purpose: "Database access and migrations"
+
+        rcs_core:
+          purpose: "Canonical RCS contracts"
+
+        rcs_providers:
+          purpose: "Provider adapters"
+
+        messaging:
+          purpose: "Message domain"
+
+        campaigns:
+          purpose: "Campaign domain"
+
+        media:
+          purpose: "Media handling"
+
+        queue:
+          purpose: "Queue abstractions"
+
+        security:
+          purpose: "Security utilities"
+
+        validation:
+          purpose: "Shared validation"
+
+        observability:
+          purpose: "Logs metrics tracing"
+
+        ui:
+          purpose: "Shared design system"
+
+        config:
+          purpose: "Typed configuration"
+
+    backend_modules:
+      - "auth"
+      - "users"
+      - "workspaces"
+      - "memberships"
+      - "contacts"
+      - "audiences"
+      - "messages"
+      - "media"
+      - "campaigns"
+      - "providers"
+      - "agents"
+      - "webhooks"
+      - "conversations"
+      - "tracking"
+      - "optout"
+      - "analytics"
+      - "audit"
+
+    forbidden:
+      - "large main.ts business logic"
+      - "God services"
+      - "God controllers"
+      - "provider logic inside campaign module"
+      - "database queries inside React components"
+      - "provider API calls from browser"
+      - "workspace authorization inside frontend only"
+
+
+  # ============================================================================
+  # 09 — MODULE STANDARD
+  # ============================================================================
+
+  module_standard:
+
+    layers:
+
+      domain:
+        - "entities"
+        - "value_objects"
+        - "domain_events"
+        - "domain_services"
+        - "ports"
+
+      application:
+        - "commands"
+        - "queries"
+        - "use_cases"
+        - "DTOs"
+
+      infrastructure:
+        - "repositories"
+        - "database"
+        - "provider_adapters"
+        - "external_services"
+
+      presentation:
+        - "controllers"
+        - "routes"
+        - "schemas"
+
+    dependencies:
+
+      domain:
+        cannot_depend_on:
+          - "database"
+          - "provider SDK"
+          - "provider HTTP API"
+          - "React"
+
+      application:
+        can_depend_on:
+          - "domain"
+
+      infrastructure:
+        can_depend_on:
+          - "domain"
+          - "application"
+
+      presentation:
+        can_depend_on:
+          - "application"
+
+    maintainability:
+      target_file_lines: 300
+      mandatory_review_over_lines: 500
+
+
+  # ============================================================================
+  # 10 — WORKSPACE CONTEXT
+  # ============================================================================
+
+  workspace_context:
+
+    required_for_authenticated_resource_requests: true
+
+    resolution:
+      - "authenticate user"
+      - "resolve requested workspace"
+      - "validate active membership"
+      - "load role"
+      - "load permissions"
+      - "create trusted WorkspaceContext"
+
+    trusted_context_fields:
+      - "user_id"
+      - "workspace_id"
+      - "role"
+      - "permissions"
+
+    repository_rule: >
+      Repositories de entidades pertencentes a Workspace devem
+      exigir workspace_id explicitamente.
+
+    example:
+      allowed: "findCampaignById(workspaceId, campaignId)"
+      forbidden: "findCampaignById(campaignId)"
+
+
+  # ============================================================================
+  # 11 — PROVIDER INDEPENDENCE
+  # ============================================================================
+
+  provider_model:
+
+    provider_lock_in: false
+
+    principle: >
+      O domínio nunca trabalha diretamente com estruturas específicas
+      de Google, Infobip, Twilio, Sinch, Zenvia ou futuros fornecedores.
+
+    initial_targets:
+      - "google_rbm"
+      - "infobip"
+      - "twilio"
+      - "sinch"
+      - "zenvia"
+
+    future_provider_support:
+      enabled: true
+
+    provider_connections_scope:
+      ownership: "workspace"
+
+    credentials_scope:
+      ownership: "workspace"
+
+
+  # ============================================================================
+  # 12 — RCS PROVIDER PORT
+  # ============================================================================
+
+  rcs_provider_port:
+
+    interface: "RcsProvider"
+
+    connection:
+      - "validateCredentials"
+      - "testConnection"
+      - "getConnectionStatus"
+
+    provider:
+      - "getProviderMetadata"
+      - "getProviderCapabilities"
+      - "getProviderLimits"
+
+    agents:
+      - "listAgents"
+      - "getAgent"
+      - "getAgentCapabilities"
+
+    recipients:
+      optional:
+        - "checkEligibility"
+        - "getCapabilities"
+
+    messaging:
+      required:
+        - "send"
+
+      optional:
+        - "revoke"
+        - "getMessageStatus"
+
+    webhooks:
+      - "verifyWebhook"
+      - "parseWebhook"
+      - "normalizeEvent"
+
+    billing:
+      optional:
+        - "estimateCost"
+        - "normalizeBillingData"
+
+    health:
+      - "getHealth"
+
+    critical_rule: >
+      send() recebe CanonicalMessage.
+
+      Campaign Engine nunca recebe ou produz payload específico
+      de Google, Infobip, Twilio, Sinch ou Zenvia.
+
+
+  # ============================================================================
+  # 13 — PROVIDER REGISTRY
+  # ============================================================================
+
+  provider_registry:
+
+    required: true
+
+    responsibilities:
+      - "register adapters"
+      - "resolve provider"
+      - "expose credential schema"
+      - "expose capabilities"
+      - "expose limits"
+      - "expose environments"
+      - "expose health"
+      - "expose agents"
+
+    adapter_activation:
+
+      requirements:
+        - "official documentation review complete"
+        - "provider evidence document created"
+        - "contract tests passing"
+        - "connection test passing"
+        - "credential handling validated"
+        - "webhook validation tested"
+
+
+  # ============================================================================
+  # 14 — OFFICIAL DOCUMENTATION FIRST
+  # ============================================================================
+
+  provider_documentation_policy:
+
+    mandatory: true
+    blocking: true
+
+    principle: >
+      Nenhuma integração externa pode ser implementada,
+      corrigida ou atualizada exclusivamente com base em memória,
+      conhecimento interno do agente, exemplos antigos,
+      implementação de outro provider ou conteúdo deste SPEC.
+
+      Antes de trabalhar em uma integração, o agente DEVE consultar
+      a documentação oficial e atual do provider correspondente.
+
+    applies_to:
+      - "Google RCS for Business / RBM"
+      - "Infobip"
+      - "Twilio"
+      - "Sinch"
+      - "Zenvia"
+      - "every future provider"
+      - "every external API integration"
+
+    authority_order:
+      1: "official API reference"
+      2: "official provider documentation"
+      3: "official SDK documentation"
+      4: "official security documentation"
+      5: "official changelog / release notes"
+      6: "official examples"
+
+    non_authoritative_sources:
+      - "blog posts"
+      - "Stack Overflow"
+      - "Reddit"
+      - "unofficial tutorials"
+      - "third-party repositories"
+      - "AI memory"
+
+    no_web_access_rule: >
+      Se documentação oficial atual não puder ser consultada,
+      não inventar endpoint, autenticação, header, payload,
+      assinatura, limite ou comportamento.
+
+      Marcar a integração como bloqueada até validação.
+
+
+  # ============================================================================
+  # 15 — PROVIDER RESEARCH CHECKLIST
+  # ============================================================================
+
+  provider_research_checklist:
+
+    required_before_adapter_implementation: true
+
+    API:
+      verify:
+        - "base URL"
+        - "API version"
+        - "endpoints"
+        - "HTTP methods"
+        - "headers"
+        - "request schemas"
+        - "response schemas"
+        - "pagination"
+        - "regional endpoints"
+
+    authentication:
+      verify:
+        - "authentication method"
+        - "API key format"
+        - "OAuth flow"
+        - "service account requirements"
+        - "token lifecycle"
+        - "refresh mechanism"
+        - "credential scopes"
+        - "credential rotation"
+        - "sandbox versus production"
+
+    RCS:
+      verify:
+        - "agent creation"
+        - "agent verification"
+        - "agent launch"
+        - "sender requirements"
+        - "country restrictions"
+        - "carrier restrictions"
+        - "supported message types"
+        - "text limits"
+        - "rich card rules"
+        - "carousel rules"
+        - "media requirements"
+        - "suggested replies"
+        - "suggested actions"
+        - "recipient eligibility"
+        - "capability checks"
+        - "batch capability checks"
+        - "TTL"
+        - "expiration"
+        - "fallback behavior"
+
+    webhooks:
+      verify:
+        - "webhook registration"
+        - "callback URL requirements"
+        - "event types"
+        - "payload schemas"
+        - "signature headers"
+        - "signature algorithm"
+        - "raw body requirements"
+        - "timestamp validation"
+        - "nonce handling"
+        - "replay protection"
+        - "retry behavior"
+        - "timeout behavior"
+        - "expected HTTP responses"
+        - "duplicate delivery behavior"
+
+    security:
+      verify:
+        - "credential storage recommendations"
+        - "signature verification"
+        - "IP restrictions when documented"
+        - "TLS requirements"
+        - "secret rotation"
+        - "token expiration"
+        - "production security recommendations"
+
+    limits:
+      verify:
+        - "rate limits"
+        - "quotas"
+        - "batch limits"
+        - "payload limits"
+        - "media limits"
+        - "recipient limits"
+        - "message limits"
+
+    errors:
+      verify:
+        - "HTTP status codes"
+        - "provider error codes"
+        - "retryable errors"
+        - "permanent errors"
+        - "rate limit errors"
+        - "authentication errors"
+        - "invalid recipient errors"
+
+    billing:
+      verify:
+        - "billing model"
+        - "billable events"
+        - "provider categories"
+        - "country differences"
+        - "carrier differences when applicable"
+
+    compliance:
+      verify:
+        - "opt-in requirements"
+        - "opt-out requirements"
+        - "regional requirements"
+        - "promotional restrictions"
+        - "sender requirements"
+
+
+  # ============================================================================
+  # 16 — PROVIDER IMPLEMENTATION GATE
+  # ============================================================================
+
+  provider_implementation_gate:
+
+    blocking: true
+
+    sequence:
+      - "identify provider"
+      - "open current official documentation"
+      - "inspect API reference"
+      - "inspect authentication"
+      - "inspect RCS documentation"
+      - "inspect webhook documentation"
+      - "inspect security documentation"
+      - "inspect rate limits"
+      - "inspect billing when applicable"
+      - "inspect changelog"
+      - "compare documentation against MASTER-SPEC"
+      - "record discrepancies"
+      - "update provider evidence"
+      - "update capability matrix"
+      - "design adapter"
+      - "implement adapter"
+      - "run contract tests"
+      - "run security tests"
+      - "test sandbox when available"
+      - "validate real integration when credentials exist"
+      - "update documentation"
+
+
+  # ============================================================================
+  # 17 — PROVIDER EVIDENCE
+  # ============================================================================
+
+  provider_evidence:
+
+    required: true
+
+    directory:
+      path: "/docs/providers"
+
+    files:
+      google: "/docs/providers/google-rbm.md"
+      infobip: "/docs/providers/infobip.md"
+      twilio: "/docs/providers/twilio.md"
+      sinch: "/docs/providers/sinch.md"
+      zenvia: "/docs/providers/zenvia.md"
+
+    each_file_must_record:
+      - "date reviewed"
+      - "official documentation references"
+      - "API version"
+      - "base URLs"
+      - "authentication"
+      - "required credentials"
+      - "endpoints used"
+      - "webhooks"
+      - "signature verification"
+      - "supported message types"
+      - "limits"
+      - "rate limits"
+      - "known restrictions"
+      - "errors"
+      - "billing behavior"
+      - "implemented capabilities"
+      - "unsupported capabilities"
+      - "deprecated capabilities"
+      - "open questions"
+
+    forbidden:
+      - "real credentials"
+      - "real tokens"
+      - "private keys"
+
+
+  # ============================================================================
+  # 18 — PROVIDER CAPABILITIES & SECURITY
+  # ============================================================================
+
+  provider_capability_matrix:
+
+    required: true
+    generated_from_verified_documentation: true
+
+    rules:
+      never_assume_feature_support: true
+      validate_before_enqueue: true
+      unknown_means_unsupported_until_verified: true
+
+
+  provider_security:
+
+    principle: >
+      Cada provider possui sua própria autenticação,
+      token lifecycle, assinatura e webhook verification.
+
+    forbidden:
+      - "generic webhook signature assumptions"
+      - "generic authentication assumptions"
+      - "sharing credentials between providers"
+      - "logging provider secrets"
+      - "frontend provider authentication"
+      - "disabling signature verification"
+
+
+  # ============================================================================
+  # 19 — CONFIGURATION & SECRETS
+  # ============================================================================
+
+  configuration_policy:
+
+    environment_specific_values:
+      use_environment_configuration: true
+
+    examples:
+      - "APP_URL"
+      - "API_URL"
+      - "DATABASE_URL"
+      - "REDIS_URL"
+      - "MEDIA_BASE_URL"
+      - "WEBHOOK_BASE_URL"
+
+    repository:
+      real_env_file_committed: false
+      env_example_required: true
+      env_example_path: "/.env.example"
+
+    runtime:
+      fail_fast_when_required_configuration_missing: true
+
+
+  secrets:
+
+    dynamic_provider_credentials:
+
+      ownership: "workspace"
+
+      frontend_storage: false
+      local_storage: false
+      plaintext_database: false
+      logging: false
+
+      encrypted_database_storage: true
+
+      encryption:
+        authenticated_encryption: true
+        versioned_ciphertext: true
+        rotation_supported: true
+
+      UI:
+        mask_after_save: true
+        reveal_existing_secret: false
+
+
+  # ============================================================================
+  # 20 — DATABASE
+  # ============================================================================
+
+  database:
+
+    engine: "PostgreSQL"
+    production_location: "VPS"
+    public_access: false
+
+    entities:
+
+      users:
+        tenant_scoped: false
+
+      workspaces:
+        tenant_scoped: false
+
+      workspace_members:
+        tenant_scoped: false
+
+      contacts:
+        tenant_scoped: true
+
+      contact_lists:
+        tenant_scoped: true
+
+      contact_list_members:
+        tenant_scoped: true
+
+      messages:
+        tenant_scoped: true
+
+      message_versions:
+        tenant_scoped: true
+
+      media_assets:
+        tenant_scoped: true
+
+      campaigns:
+        tenant_scoped: true
+
+      campaign_recipients:
+        tenant_scoped: true
+
+      provider_connections:
+        tenant_scoped: true
+
+      provider_credentials:
+        tenant_scoped: true
+
+      provider_agents:
+        tenant_scoped: true
+
+      provider_capabilities:
+        tenant_scoped: true
+
+      outbound_messages:
+        tenant_scoped: true
+
+      inbound_messages:
+        tenant_scoped: true
+
+      conversations:
+        tenant_scoped: true
+
+      tracked_links:
+        tenant_scoped: true
+
+      click_events:
+        tenant_scoped: true
+
+      webhook_events:
+        tenant_scoped: true
+
+      opt_outs:
+        tenant_scoped: true
+
+      audit_logs:
+        tenant_scoped: true
+
+      auth_audit_logs:
+        tenant_scoped: false
+        system_identity_events_only: true
+        workspace_resource_data_allowed: false
+        normal_user_query_endpoint: false
+        migration_note: >
+          Preserva o log inicial de autenticação. Eventos sem workspace,
+          como login de uma conta desconhecida, não recebem ownership inventado.
+
+    tenant_rule: >
+      Toda tabela tenant_scoped deve possuir workspace_id
+      NOT NULL e índices apropriados.
+
+    foreign_keys:
+      required: true
+
+    composite_constraints:
+      workspace_aware: true
+
+    security:
+      least_privilege: true
+      application_superuser: false
+      encrypted_transport: true
+      parameterized_queries: true
+
+    migrations:
+      versioned: true
+
+    backup:
+      automated: true
+      encrypted: true
+      restore_test_required: true
+
+
+  # ============================================================================
+  # 21 — TENANT DATA SECURITY
+  # ============================================================================
+
+  tenant_security:
+
+    mandatory: true
+
+    request_flow:
+      - "authenticate user"
+      - "resolve workspace"
+      - "validate membership"
+      - "validate permission"
+      - "execute workspace-scoped use case"
+
+    API:
+
+      workspace_context_required: true
+
+      unauthorized_workspace_access:
+        response_policy: "403_or_404_according_to_security_policy"
+
+    database_queries:
+
+      tenant_scope_required: true
+
+    queue_jobs:
+
+      workspace_id_required: true
+
+    webhook_events:
+
+      resolve_workspace_from_trusted_provider_connection: true
+
+      rule: >
+        Não aceitar workspace_id fornecido externamente pelo provider
+        como fonte de autorização.
+
+    background_workers:
+
+      workspace_context_required: true
+
+    cache:
+
+      keys_must_include_workspace_scope: true
+
+    storage:
+
+      media_paths_workspace_scoped: true
+
+    analytics:
+
+      workspace_scoped: true
+
+    tests:
+
+      mandatory:
+        - "workspace A cannot read workspace B contact"
+        - "workspace A cannot edit workspace B message"
+        - "workspace A cannot send workspace B campaign"
+        - "workspace A cannot access workspace B provider credentials"
+        - "workspace A cannot access workspace B analytics"
+        - "workspace A cannot access workspace B media"
+
+
+  # ============================================================================
+  # 22 — CONTACTS & AUDIENCES
+  # ============================================================================
+
+  contacts:
+
+    ownership: "workspace"
+
+    input:
+      manual: true
+      CSV: true
+      paste: true
+
+    normalization:
+      standard: "E.164"
+      default_country: "BR"
+
+    pipeline:
+      - "sanitize"
+      - "normalize"
+      - "validate"
+      - "deduplicate_within_workspace"
+      - "check_workspace_opt_out"
+      - "persist"
+
+    uniqueness:
+      recommended:
+        - "workspace_id"
+        - "phone_normalized"
+
+
+  audiences:
+
+    ownership: "workspace"
+
+    list_management: true
+    contact_can_belong_to_multiple_lists: true
+    deleting_list_deletes_contact: false
+
+
+  # ============================================================================
+  # 23 — ELIGIBILITY SERVICE
+  # ============================================================================
+
+  eligibility_service:
+
+    required: true
+    provider_independent: true
+    workspace_scoped: true
+
+    strategies:
+      provider_single_check: true
+      provider_bulk_check: true
+      provider_managed: true
+      send_and_normalize_result: true
+
+    rule: >
+      Estratégia específica deve ser derivada da
+      documentação oficial vigente do provider.
+
+
+  # ============================================================================
+  # 24 — MESSAGE DOMAIN
+  # ============================================================================
+
+  messages:
+
+    ownership: "workspace"
+
+    reusable: true
+    versioned: true
+
+    principle: >
+      Mensagem é entidade canônica independente
+      de campanha e provider.
+
+    statuses:
+      - "draft"
+      - "active"
+      - "archived"
+
+    attribution:
+      created_by_user_id: true
+      updated_by_user_id: true
+
+
+  message_archetypes:
+
+    marketing:
+      - "launch"
+      - "offer"
+      - "promotion"
+      - "invitation"
+      - "reengagement"
+      - "recovery"
+      - "announcement"
+
+    transactional:
+      - "confirmation"
+      - "reminder"
+      - "status_update"
+      - "delivery_update"
+      - "appointment"
+      - "post_purchase"
+
+    authentication:
+      - "OTP"
+      - "verification"
+      - "password_reset"
+
+    mixed:
+      - "customer_journey"
+      - "transaction_plus_offer"
+
+
+  canonical_message:
+
+    formats:
+
+      MVP:
+        - "text"
+        - "rich_card"
+
+      architecture_ready:
+        - "media"
+        - "carousel"
+        - "file"
+
+
+  # ============================================================================
+  # 25 — MESSAGE BUILDER
+  # ============================================================================
+
+  message_builder:
+
+    workspace_scoped: true
+
+    fields:
+
+      media:
+        enabled: true
+
+      title:
+        enabled: true
+        live_counter: true
+
+      body:
+        enabled: true
+        live_counter: true
+
+      actions:
+        enabled: true
+
+      suggested_replies:
+        enabled: true
+
+    destinations:
+      - "WhatsApp"
+      - "landing_page"
+      - "website"
+      - "custom_URL"
+
+    validation:
+      realtime: true
+      provider_aware: true
+
+    preview:
+      required: true
+      live: true
+      device_style: "mobile"
+
+
+  # ============================================================================
+  # 26 — MEDIA SERVICE
+  # ============================================================================
+
+  media_service:
+
+    required: true
+    workspace_scoped: true
+
+    responsibilities:
+      - "upload"
+      - "validate MIME"
+      - "validate file size"
+      - "extract metadata"
+      - "store"
+      - "generate delivery URL"
+      - "validate provider compatibility"
+      - "cleanup unused assets"
+
+    security:
+      MIME_allowlist: true
+      real_MIME_detection: true
+      executable_uploads: false
+      generated_filename: true
+      path_traversal_protection: true
+      workspace_isolation: true
+
+
+  # ============================================================================
+  # 27 — CAMPAIGN DOMAIN
+  # ============================================================================
+
+  campaigns:
+
+    ownership: "workspace"
+
+    attribution:
+      created_by_user_id: true
+      updated_by_user_id: true
+      scheduled_by_user_id: true
+      started_by_user_id: true
+      paused_by_user_id: true
+      cancelled_by_user_id: true
+
+    states:
+      - "draft"
+      - "scheduled"
+      - "ready"
+      - "queued"
+      - "running"
+      - "paused"
+      - "completed"
+      - "cancelled"
+      - "expired"
+      - "failed"
+
+    creation_flow:
+      - "objective"
+      - "provider_and_agent"
+      - "audience"
+      - "message"
+      - "actions"
+      - "fallback"
+      - "schedule"
+      - "tracking"
+      - "preflight"
+      - "review"
+      - "confirm"
+
+    required_permissions:
+
+      create:
+        - "campaigns.manage"
+
+      edit:
+        - "campaigns.manage"
+
+      schedule:
+        - "campaigns.send"
+
+      send:
+        - "campaigns.send"
+
+      pause:
+        - "campaigns.send"
+
+      cancel:
+        - "campaigns.send"
+
+    controls:
+      pause: true
+      resume: true
+      cancel: true
+      emergency_stop: true
+
+    filtering:
+      available:
+        - "all"
+        - "mine"
+        - "draft"
+        - "scheduled"
+        - "running"
+        - "completed"
+        - "cancelled"
+        - "failed"
+
+
+  # ============================================================================
+  # 28 — CAMPAIGN RECIPIENT SNAPSHOT
+  # ============================================================================
+
+  campaign_recipients:
+
+    ownership: "workspace"
+
+    snapshot_required: true
+
+    principle: >
+      Uma campanha mantém snapshot dos destinatários utilizados
+      para preservar histórico mesmo se listas forem alteradas depois.
+
+    fields:
+      - "id"
+      - "workspace_id"
+      - "campaign_id"
+      - "contact_id"
+      - "phone_snapshot"
+      - "name_snapshot"
+      - "eligibility_status"
+      - "delivery_status"
+      - "created_at"
+
+    unique_constraint:
+      - "workspace_id"
+      - "campaign_id"
+      - "contact_id"
+
+
+  # ============================================================================
+  # 29 — SCHEDULING / TTL / FALLBACK
+  # ============================================================================
+
+  scheduling:
+
+    supported: true
+    engine_owner: "RCS Sender"
+
+    modes:
+      - "send_now"
+      - "scheduled"
+
+    timezone:
+      required: true
+      default: "America/Sao_Paulo"
+
+
+  expiration:
+
+    supported: true
+
+    rule: >
+      Provider-specific TTL e expiration devem vir
+      das capabilities verificadas.
+
+
+  fallback:
+
+    supported: true
+
+    initial_channel:
+      - "SMS"
+
+    strategies:
+      provider_native: true
+      application_orchestrated: "architecture_ready"
+
+
+  # ============================================================================
+  # 30 — CAMPAIGN PREFLIGHT
+  # ============================================================================
+
+  preflight:
+
+    required: true
+    workspace_scoped: true
+
+    validations:
+      - "workspace_active"
+      - "user_membership_active"
+      - "user_has_send_permission"
+      - "provider_belongs_to_workspace"
+      - "agent_belongs_to_workspace"
+      - "audience_belongs_to_workspace"
+      - "message_belongs_to_workspace"
+      - "provider_connected"
+      - "agent_active"
+      - "campaign_purpose_compatible"
+      - "message_valid"
+      - "media_valid"
+      - "provider_capabilities"
+      - "agent_capabilities"
+      - "regional_compatibility"
+      - "contacts_valid"
+      - "duplicates_removed"
+      - "opt_out_removed"
+      - "eligibility_strategy_resolved"
+      - "TTL_valid"
+      - "schedule_valid"
+      - "fallback_valid"
+
+    explicit_confirmation:
+      required: true
+
+
+  # ============================================================================
+  # 31 — CAMPAIGN ENGINE
+  # ============================================================================
+
+  campaign_engine:
+
+    provider_independent: true
+    workspace_scoped: true
+    asynchronous: true
+    browser_dependency: false
+
+    queue:
+      required: true
+
+    queue_job_required_fields:
+      - "workspace_id"
+      - "campaign_id"
+      - "campaign_recipient_id"
+      - "provider_connection_id"
+
+    workers:
+      required: true
+
+    pipeline:
+      - "load_workspace"
+      - "load_campaign_with_workspace_scope"
+      - "validate_campaign_state"
+      - "validate_schedule"
+      - "validate_expiration"
+      - "resolve_provider_connection_with_workspace_scope"
+      - "resolve_agent"
+      - "load_recipient"
+      - "recheck_opt_out"
+      - "resolve_eligibility_strategy"
+      - "validate_capabilities"
+      - "check_idempotency"
+      - "load_canonical_message"
+      - "prepare_media"
+      - "create_tracking_links"
+      - "provider_adapter_translate"
+      - "provider_adapter_send"
+      - "normalize_result"
+      - "persist_result_with_workspace_scope"
+      - "acknowledge_job"
+
+    controls:
+      concurrency: true
+      provider_rate_limit: true
+      pause: true
+      resume: true
+      cancel: true
+      emergency_stop: true
+
+
+  # ============================================================================
+  # 32 — RATE LIMIT / RETRY / IDEMPOTENCY
+  # ============================================================================
+
+  rate_limits:
+
+    provider_specific: true
+    workspace_aware: true
+    derived_from_official_documentation: true
+
+    adaptive_backoff:
+      enabled: true
+
+
+  idempotency:
+
+    required: true
+
+    outbound_send:
+      key_components:
+        - "workspace_id"
+        - "campaign_id"
+        - "campaign_recipient_id"
+
+    webhook:
+      provider_event_deduplication: true
+
+
+  retry:
+
+    temporary_error:
+      enabled: true
+      strategy: "exponential_backoff_with_jitter"
+
+    permanent_error:
+      retry: false
+
+    dead_letter_queue:
+      required: true
+      workspace_scoped: true
+
+
+  # ============================================================================
+  # 33 — WEBHOOK ARCHITECTURE
+  # ============================================================================
+
+  webhooks:
+
+    route:
+      pattern: "/webhooks/rcs/{provider}"
+
+    configuration:
+      domain_hardcoded: false
+      public_URL_hardcoded: false
+
+    principle: >
+      A rota é canônica, porém autenticação, assinatura,
+      parsing e validação são responsabilidades específicas
+      de cada provider adapter.
+
+    workspace_resolution:
+
+      source: "trusted_provider_connection_mapping"
+
+      never_trust:
+        - "external workspace_id"
+        - "unverified provider metadata"
+
+    ingress_pipeline:
+      - "resolve_provider"
+      - "validate_request_size"
+      - "provider_specific_signature_verification"
+      - "resolve_provider_connection"
+      - "resolve_workspace_from_provider_connection"
+      - "persist_raw_event_securely"
+      - "deduplicate_ingress"
+      - "enqueue_processing"
+      - "return_provider_compatible_success_response"
+
+    worker_pipeline:
+      - "load_raw_event"
+      - "load_workspace_context"
+      - "provider_parse"
+      - "normalize_event"
+      - "domain_idempotency"
+      - "persist_domain_event"
+      - "update_message"
+      - "update_campaign"
+      - "update_analytics"
+
+    canonical_events:
+      - "message.sent"
+      - "message.delivered"
+      - "message.read"
+      - "message.failed"
+      - "message.received"
+      - "action.selected"
+      - "contact.subscribe"
+      - "contact.unsubscribe"
+
+
+  # ============================================================================
+  # 34 — CONVERSATIONS
+  # ============================================================================
+
+  conversations:
+
+    ownership: "workspace"
+    mode: "lite"
+
+    features:
+      - "conversation_list"
+      - "contact_identity"
+      - "campaign_context"
+      - "message_timeline"
+      - "inbound_messages"
+      - "action_events"
+
+
+  # ============================================================================
+  # 35 — TRACKING / CONSENT / BILLING
+  # ============================================================================
+
+  URL_tracking:
+
+    workspace_scoped: true
+
+    application_tracking:
+      supported: true
+
+    provider_native_tracking:
+      use_when_available: true
+
+
+  consent:
+
+    workspace_scoped: true
+
+    opt_out:
+      persistent: true
+      provider_independent: true
+
+      enforced:
+        during_preflight: true
+        immediately_before_send: true
+
+
+  billing:
+
+    workspace_scoped: true
+    provider_defined: true
+
+    hardcoded_price_model:
+      allowed: false
+
+    estimate:
+      supported_when_provider_exposes_required_data: true
+
+
+  # ============================================================================
+  # 36 — AUDIT LOG
+  # ============================================================================
+
+  audit:
+
+    required: true
+    workspace_scoped: true
+
+    events:
+      - "workspace.created"
+      - "workspace.updated"
+      - "member.invited"
+      - "member.role_changed"
+      - "member.removed"
+      - "provider.connected"
+      - "provider.credentials_updated"
+      - "provider.disconnected"
+      - "message.created"
+      - "message.updated"
+      - "campaign.created"
+      - "campaign.updated"
+      - "campaign.scheduled"
+      - "campaign.started"
+      - "campaign.paused"
+      - "campaign.resumed"
+      - "campaign.cancelled"
+
+    fields:
+      - "workspace_id"
+      - "actor_user_id"
+      - "event"
+      - "entity_type"
+      - "entity_id"
+      - "timestamp"
+      - "metadata"
+
+    forbidden:
+      - "provider_secret"
+      - "password"
+      - "access_token"
+      - "private_key"
+
+
+  # ============================================================================
+  # 37 — ANALYTICS
+  # ============================================================================
+
+  analytics:
+
+    ownership: "workspace"
+
+    metrics:
+      - "campaigns"
+      - "recipients"
+      - "sent"
+      - "delivered"
+      - "read"
+      - "clicked"
+      - "replied"
+      - "failed"
+      - "opted_out"
+      - "fallback_sent"
+
+    rates:
+      - "delivery_rate"
+      - "read_rate"
+      - "click_rate"
+      - "reply_rate"
+      - "failure_rate"
+      - "opt_out_rate"
+
+    dimensions:
+      - "campaign"
+      - "message"
+      - "provider"
+      - "agent"
+      - "created_by_user"
+
+    cross_workspace_analytics:
+      normal_users: false
+
+
+  # ============================================================================
+  # 38 — SECURITY
+  # ============================================================================
+
+  security:
+
+    standards:
+      - "OWASP ASVS"
+      - "OWASP Top 10"
+
+    principles:
+      - "least privilege"
+      - "defense in depth"
+      - "secure by default"
+      - "fail closed"
+      - "zero trust at external boundaries"
+      - "tenant isolation"
+
+    authentication:
+      required: true
+      secure_sessions: true
+      brute_force_protection: true
+
+      foundation_sessions:
+        token_random_bytes: 32
+        persisted_token: "SHA-256 hash only"
+        absolute_expiration_hours: 8
+        automatic_renewal: false
+        logout_revokes_current_session: true
+        disabled_accounts_denied: true
+        cookie_http_only: true
+        cookie_same_site: "Strict"
+        production_cookie_secure: true
+        production_cookie_prefix: "__Host-"
+        production_app_https_required: true
+
+      foundation_browser_requests:
+        same_origin_server_proxy: true
+        origin_must_match_APP_URL: true
+        mutation_custom_header: "X-RCS-Request: 1"
+        proxy_body_limit_bytes: 8192
+        client_forwarded_ip_headers_trusted: false
+        production_trusted_proxy_validation_pending: true
+
+    authorization:
+      server_side: true
+      default: "deny"
+      workspace_membership_required: true
+
+    API:
+      authentication: true
+      authorization: true
+      workspace_scope_validation: true
+      rate_limiting: true
+      request_size_limit: true
+      secure_headers: true
+
+    protections:
+      SQL_injection: true
+      XSS: true
+      command_injection: true
+      CSRF_when_applicable: true
+      SSRF: true
+      path_traversal: true
+      webhook_replay: true
+      forged_webhook: true
+      IDOR: true
+      cross_tenant_access: true
+
+    privacy:
+      LGPD: true
+      data_minimization: true
+      sensitive_log_redaction: true
+
+
+  # ============================================================================
+  # 39 — DESIGN SYSTEM
+  # ============================================================================
+
+  design_system:
+
+    name: "Purple Signal"
+    default_theme: "dark"
+
+    colors:
+
+      brand:
+        purple_400: "#C084FC"
+        purple_500: "#A855F7"
+        purple_600: "#9333EA"
+        purple_700: "#7E22CE"
+
+      dark:
+        background: "#09090B"
+        surface: "#111116"
+        elevated: "#18181F"
+        border: "#27272F"
+        text_primary: "#FAFAFA"
+        text_secondary: "#A1A1AA"
+
+      semantic:
+        success: "#22C55E"
+        warning: "#F59E0B"
+        error: "#EF4444"
+        info: "#3B82F6"
+
+    gradient:
+      primary: "linear-gradient(135deg,#7E22CE 0%,#A855F7 50%,#C084FC 100%)"
+
+    typography:
+      primary: "Inter"
+      mono: "Geist Mono"
+
+    accessibility:
+      target: "WCAG AA"
+
+
+  # ============================================================================
+  # 40 — DOCUMENTATION AS CODE
+  # ============================================================================
+
+  documentation:
+
+    required: true
+
+    principle: >
+      Documentação é parte do produto e deve evoluir junto
+      com implementação, arquitetura e integrações.
+
+    primary_language: "pt-BR"
+
+    repository_files:
+
+      README:
+        path: "/README.md"
+        required: true
+
+      environment_example:
+        path: "/.env.example"
+        required: true
+
+      security:
+        path: "/SECURITY.md"
+        required: true
+
+      changelog:
+        path: "/CHANGELOG.md"
+        required: true
+
+      contributing:
+        path: "/CONTRIBUTING.md"
+        recommended: true
+
+      docs:
+        path: "/docs"
+        required: true
+
+    docs_structure:
+      - "/docs/architecture.md"
+      - "/docs/workspaces.md"
+      - "/docs/local-development.md"
+      - "/docs/vps-installation.md"
+      - "/docs/configuration.md"
+      - "/docs/providers/"
+      - "/docs/webhooks.md"
+      - "/docs/security.md"
+      - "/docs/backup-restore.md"
+      - "/docs/troubleshooting.md"
+
+
+  # ============================================================================
+  # 41 — README
+  # ============================================================================
+
+  readme:
+
+    required: true
+
+    audience:
+      - "beginner"
+      - "non_developer"
+      - "developer"
+      - "VPS_operator"
+
+    banner:
+
+      required: true
+      design_system: "Purple Signal"
+      style: "dark technological professional clean"
+      suggested_path: "/docs/assets/readme-banner.png"
+
+    required_sections:
+      - "banner"
+      - "project title"
+      - "short description"
+      - "features"
+      - "architecture overview"
+      - "workspace architecture"
+      - "technology stack"
+      - "requirements"
+      - "quick start"
+      - "local installation"
+      - "environment configuration"
+      - "database configuration"
+      - "Redis configuration"
+      - "migrations"
+      - "starting application"
+      - "provider configuration"
+      - "webhook configuration"
+      - "production VPS installation"
+      - "domain and HTTPS"
+      - "process management"
+      - "backup"
+      - "updating application"
+      - "troubleshooting"
+      - "security"
+      - "project structure"
+
+    beginner_mode:
+
+      every_major_step:
+        - "explain objective"
+        - "provide exact command"
+        - "show expected result"
+        - "explain verification"
+        - "explain common errors"
+
+
+  # ============================================================================
+  # 42 — VPS DEPLOYMENT
+  # ============================================================================
+
+  deployment:
+
+    target: "VPS"
+
+    local_Docker_required: false
+
+    production_containerization:
+      mandatory: false
+      supported: true
+
+    initial_OS: "Ubuntu LTS"
+
+    requirements:
+      - "Node.js LTS"
+      - "pnpm"
+      - "process manager"
+      - "reverse proxy"
+      - "HTTPS"
+      - "firewall"
+
+    PostgreSQL:
+      strategy: "existing VPS PostgreSQL"
+
+    Redis:
+      required: true
+
+    domain:
+      required_during_development: false
+      hardcoded: false
+      configured_at_deployment: true
+
+    webhook_public_URL:
+      required_during_development: false
+      hardcoded: false
+      configured_at_deployment: true
+
+
+  # ============================================================================
+  # 43 — OBSERVABILITY & RELIABILITY
+  # ============================================================================
+
+  observability:
+
+    structured_logs:
+      enabled: true
+      format: "JSON"
+
+    metrics:
+      enabled: true
+
+    tracing:
+      enabled: true
+
+    correlation_id:
+      required: true
+
+    context_fields:
+      - "correlation_id"
+      - "workspace_id"
+      - "campaign_id"
+      - "provider"
+
+    redaction:
+      - "credentials"
+      - "passwords"
+      - "tokens"
+      - "authorization_headers"
+
+
+  reliability:
+
+    graceful_shutdown:
+      API: true
+      worker: true
+
+    recover_jobs:
+      enabled: true
+
+    idempotent_consumers:
+      required: true
+
+    provider_isolation:
+      required: true
+
+
+  # ============================================================================
+  # 44 — TESTING
+  # ============================================================================
+
+  testing:
+
+    unit:
+      required: true
+
+    integration:
+      required: true
+
+    tenant_isolation:
+
+      required: true
+
+      tests:
+        - "cross-workspace contact access"
+        - "cross-workspace list access"
+        - "cross-workspace message access"
+        - "cross-workspace campaign access"
+        - "cross-workspace media access"
+        - "cross-workspace provider access"
+        - "cross-workspace credential access"
+        - "cross-workspace conversation access"
+        - "cross-workspace analytics access"
+        - "cross-workspace audit access"
+
+    provider_contract:
+
+      required: true
+
+      tests:
+        - "credential validation"
+        - "authentication"
+        - "connection"
+        - "capability declaration"
+        - "agent discovery"
+        - "CanonicalMessage translation"
+        - "send"
+        - "response normalization"
+        - "error normalization"
+        - "webhook verification"
+        - "webhook parsing"
+        - "webhook normalization"
+
+    E2E:
+
+      required: true
+
+      flows:
+        - "register user"
+        - "create default workspace"
+        - "switch workspace"
+        - "invite member"
+        - "connect provider"
+        - "import contacts"
+        - "create message"
+        - "create campaign"
+        - "send campaign"
+        - "view workspace analytics"
+
+    security:
+      required: true
+
+
+  # ============================================================================
+  # 45 — CI/CD
+  # ============================================================================
+
+  CI_CD:
+
+    checks:
+      - "typecheck"
+      - "lint"
+      - "unit tests"
+      - "integration tests"
+      - "tenant isolation tests"
+      - "provider contract tests"
+      - "security scan"
+      - "dependency scan"
+      - "secret scan"
+      - "build"
+      - "documentation link check"
+
+    deployment:
+      repeatable: true
+
+    rollback:
+      required: true
+
+
+  # ============================================================================
+  # 46 — DOCUMENTATION LOOP
+  # ============================================================================
+
+  documentation_loop:
+
+    required_after_each_wave: true
+
+    inspect_changes:
+      - "environment variable"
+      - "dependency"
+      - "command"
+      - "module"
+      - "workspace behavior"
+      - "permissions"
+      - "provider behavior"
+      - "provider documentation"
+      - "authentication"
+      - "webhook"
+      - "security requirement"
+      - "deployment requirement"
+      - "installation procedure"
+
+    update_when_affected:
+      - "README.md"
+      - ".env.example"
+      - "docs/"
+      - "docs/providers/"
+      - "SECURITY.md"
+      - "CHANGELOG.md"
+
+    acceptance:
+      documentation_matches_code: true
+      obsolete_commands_removed: true
+      beginner_installation_remains_valid: true
+
+
+  # ============================================================================
+  # 47 — EXECUTION INSTRUCTIONS
+  # ============================================================================
+
+  execution:
+
+    autonomy_mode: "high"
+
+    before_each_wave:
+      - "read MASTER-SPEC.yaml"
+      - "identify current wave"
+      - "inspect repository"
+      - "inspect existing implementation"
+      - "identify dependencies"
+      - "identify workspace impact"
+      - "identify security impact"
+      - "identify documentation impact"
+      - "produce implementation plan"
+
+    provider_wave_additional_steps:
+      - "identify provider"
+      - "read official API documentation"
+      - "read authentication documentation"
+      - "read webhook documentation"
+      - "read security documentation"
+      - "read current changelog"
+      - "update provider evidence"
+      - "compare docs against capability matrix"
+
+    implementation_loop:
+
+      1: "inspect"
+      2: "research official docs when external integration is involved"
+      3: "plan"
+      4: "implement"
+      5: "typecheck"
+      6: "lint"
+      7: "unit test"
+      8: "integration test"
+      9: "tenant isolation test"
+      10: "provider contract test when applicable"
+      11: "security check"
+      12: "inspect result"
+      13: "fix"
+      14: "retest"
+      15: "validate acceptance"
+      16: "update documentation"
+      17: "validate documentation"
+      18: "close wave"
+
+    forbidden:
+      - "invent API endpoints"
+      - "invent authentication mechanisms"
+      - "invent webhook signatures"
+      - "invent provider capabilities"
+      - "use AI memory as provider authority"
+      - "skip official provider documentation"
+      - "skip workspace authorization"
+      - "trust workspace_id supplied by client"
+      - "cross-workspace queries"
+      - "skip failing tests"
+      - "disable security controls to pass tests"
+      - "bypass provider abstraction"
+      - "commit secrets"
+      - "hardcode provider credentials"
+      - "hardcode production domain"
+      - "hardcode webhook base URL"
+      - "require Docker locally"
+
+
+  # ============================================================================
+  # 48 — WAVES
+  # ============================================================================
+
+  waves:
+
+    wave_0:
+
+      name: "Environment & Spec Validation"
+
+      execution_status: "partially_validated"
+      execution_notes:
+        - "Git, Node.js 24 and pnpm available in the current workspace."
+        - "No local .env, PostgreSQL or Redis service configuration found."
+        - "Local repository has no commits; previous CI references are not current-tree evidence."
+
+      tasks:
+        - "validate Git"
+        - "validate Node.js LTS"
+        - "validate pnpm"
+        - "validate repository"
+        - "validate environment configuration strategy"
+        - "validate PostgreSQL availability"
+        - "validate Redis strategy"
+
+      not_required:
+        - "Docker"
+        - "Docker Desktop"
+        - "production domain"
+        - "production webhook URL"
+        - "production provider credentials"
+
+      gate:
+        blocking: true
+
+
+    wave_1:
+
+      name: "Engineering Foundation"
+
+      execution_status: "implemented_pending_service_validation"
+      execution_notes:
+        - "Monorepo code, build, types and lint validated locally."
+        - "Current-tree CI and real-service validation remain pending."
+
+      deliverables:
+        - "monorepo"
+        - "web"
+        - "API"
+        - "worker"
+        - "shared packages"
+        - "typed config"
+        - "logging"
+        - "health checks"
+        - ".env.example"
+        - "initial README"
+
+
+    wave_2:
+
+      name: "Authentication & Workspace Foundation"
+
+      execution_status: "implemented_pending_integration_validation"
+      implemented:
+        - "registration creates user, default workspace, owner membership and session atomically"
+        - "login, session validation, expiration and logout revocation"
+        - "workspace-scoped roles, permissions and trusted WorkspaceContext"
+        - "workspace selector"
+        - "workspace-scoped member and audit repositories"
+        - "member API with last active owner protection"
+        - "unit security and tenant isolation tests"
+        - "real-service integration and Playwright E2E suites prepared"
+      remaining:
+        - "execute PostgreSQL and Redis integration validation"
+        - "execute complete Chromium E2E flow"
+        - "confirm CI result for the current repository tree"
+
+      deliverables:
+        - "users"
+        - "authentication"
+        - "secure sessions"
+        - "workspaces"
+        - "workspace_members"
+        - "default workspace creation"
+        - "workspace selector"
+        - "roles"
+        - "permissions"
+        - "WorkspaceContext"
+        - "workspace-scoped repositories"
+        - "tenant isolation tests"
+
+
+    wave_3:
+
+      name: "Security Foundation"
+
+      execution_status: "in_progress"
+      execution_notes:
+        - "Initial headers, encryption, rate limiting, CSRF controls, workspace authorization and audit implemented."
+        - "Production proxy limits and remaining security acceptance require validation."
+
+      deliverables:
+        - "authorization"
+        - "RBAC"
+        - "rate limiting"
+        - "credential encryption"
+        - "audit foundation"
+        - "security headers"
+        - "IDOR protection"
+        - "cross-tenant protection"
+        - "SECURITY.md"
+
+
+    wave_4:
+
+      name: "Purple Signal Design System"
+
+      deliverables:
+        - "design tokens"
+        - "dark theme"
+        - "AppShell"
+        - "workspace selector"
+        - "navigation"
+        - "forms"
+        - "tables"
+        - "dialogs"
+        - "README banner"
+
+
+    wave_5:
+
+      name: "Provider Core"
+
+      deliverables:
+        - "RcsProvider"
+        - "ProviderRegistry"
+        - "CapabilityMatrix"
+        - "CanonicalEvent"
+        - "CanonicalError"
+        - "workspace-scoped provider connections"
+        - "encrypted workspace credentials"
+        - "provider evidence framework"
+
+
+    wave_6:
+
+      name: "Mock Provider"
+
+      deliverables:
+        - "MockRcsProvider"
+        - "success scenarios"
+        - "failure scenarios"
+        - "webhook simulator"
+        - "provider contract tests"
+
+
+    wave_7:
+
+      name: "First Real Provider Proof"
+
+      documentation_first:
+        mandatory: true
+        blocking: true
+
+      sequence:
+        - "select first provider"
+        - "read current official documentation"
+        - "create provider evidence"
+        - "map authentication"
+        - "map API"
+        - "map messages"
+        - "map webhook"
+        - "map security"
+        - "map limits"
+        - "map errors"
+        - "implement workspace-scoped adapter connection"
+        - "contract test"
+        - "real provider test"
+
+      gate:
+        blocking: true
+
+
+    wave_8:
+      name: "Contacts & Audiences"
+
+    wave_9:
+      name: "Eligibility Engine"
+
+    wave_10:
+      name: "Media Service"
+
+    wave_11:
+      name: "Message Domain"
+
+    wave_12:
+      name: "Message Library"
+
+    wave_13:
+      name: "Message Builder"
+
+    wave_14:
+      name: "Campaign Domain & User Attribution"
+
+    wave_15:
+      name: "Scheduling, Expiration & Fallback"
+
+    wave_16:
+      name: "Campaign Engine"
+
+    wave_17:
+      name: "Webhook & Tracking"
+
+    wave_18:
+      name: "Inbox Lite"
+
+
+    wave_19:
+
+      name: "Additional Provider Adapters"
+
+      documentation_first:
+        mandatory: true
+        blocking: true
+
+      targets:
+        - "Google RBM"
+        - "Infobip"
+        - "Twilio"
+        - "Sinch"
+        - "Zenvia"
+
+      rule: >
+        Cada provider passa individualmente pelo
+        Provider Implementation Gate.
+
+
+    wave_20:
+
+      name: "Analytics & Audit"
+
+      deliverables:
+        - "workspace dashboard"
+        - "campaign analytics"
+        - "provider analytics"
+        - "user attribution"
+        - "audit log"
+
+
+    wave_21:
+      name: "Observability"
+
+
+    wave_22:
+
+      name: "Production Hardening"
+
+      deliverables:
+        - "security review"
+        - "tenant isolation penetration tests"
+        - "dependency audit"
+        - "load testing"
+        - "failure testing"
+        - "backup validation"
+        - "restore test"
+        - "production deployment"
+        - "rollback validation"
+
+
+    wave_23:
+
+      name: "Documentation & Deployment Validation"
+
+      objective: >
+        Validar instalação limpa utilizando somente
+        documentação oficial do projeto.
+
+      deliverables:
+        - "final README"
+        - "final README banner"
+        - "workspace documentation"
+        - "local installation guide"
+        - "VPS installation guide"
+        - "provider guides"
+        - "webhook guide"
+        - "security guide"
+        - "backup and restore guide"
+        - "troubleshooting guide"
+        - "CHANGELOG"
+        - "validated .env.example"
+
+      validation:
+        clean_install_test: true
+        VPS_installation_dry_run: true
+        documentation_link_check: true
+        secret_scan: true
+        placeholder_check: true
+
+
+  # ============================================================================
+  # 49 — DEFINITION OF DONE
+  # ============================================================================
+
+  definition_of_done:
+
+    users_and_workspaces:
+      - "user can register"
+      - "default workspace is created"
+      - "user can switch workspace"
+      - "owner can manage members"
+      - "roles are enforced"
+      - "workspace isolation is tested"
+
+    application:
+      - "provider can be connected per workspace"
+      - "contacts can be imported per workspace"
+      - "messages can be created per workspace"
+      - "campaign can be created per workspace"
+      - "campaign records creator"
+      - "campaign can be sent by authorized user"
+      - "webhooks resolve correct workspace"
+      - "analytics are isolated by workspace"
+
+    providers:
+      - "official documentation reviewed"
+      - "provider evidence created"
+      - "authentication validated"
+      - "API contract validated"
+      - "webhook contract validated"
+      - "security requirements validated"
+      - "rate limits mapped"
+      - "errors mapped"
+      - "contract tests passing"
+
+    architecture:
+      - "workspace-first architecture"
+      - "provider-independent domain"
+      - "canonical message"
+      - "canonical event"
+      - "canonical error"
+      - "provider adapters isolated"
+      - "module boundaries respected"
+
+    security:
+      - "workspace isolation enforced"
+      - "IDOR tests passing"
+      - "provider credentials encrypted"
+      - "PostgreSQL private"
+      - "Redis private"
+      - "authorization enforced"
+      - "webhooks verified"
+      - "security tests passing"
+
+    documentation:
+      - "README complete"
+      - "README banner complete"
+      - ".env.example complete"
+      - "workspace architecture documented"
+      - "local installation documented"
+      - "VPS installation documented"
+      - "provider documentation complete"
+      - "domain configuration documented"
+      - "HTTPS documented"
+      - "webhook configuration documented"
+      - "backup documented"
+      - "restore documented"
+      - "update procedure documented"
+      - "rollback documented"
+      - "troubleshooting documented"
+      - "SECURITY.md complete"
+      - "CHANGELOG maintained"
+
+    installation:
+      local_requires_Docker: false
+      beginner_installation_possible: true
+      VPS_installation_possible_from_documentation: true
+
+
+  # ============================================================================
+  # 50 — FINAL EXECUTION CONTRACT
+  # ============================================================================
+
+  final_execution_contract:
+
+    source_of_truth:
+      file: "MASTER-SPEC.yaml"
+      version: "5.3.0"
+
+    precedence:
+      1: "security"
+      2: "workspace isolation"
+      3: "official external API contracts"
+      4: "canonical domain contracts"
+      5: "provider abstraction"
+      6: "product requirements"
+      7: "data integrity"
+      8: "architecture"
+      9: "design system"
+      10: "documentation"
+      11: "wave requirements"
+      12: "implementation details"
+
+    workspace_rule: >
+      Recursos operacionais pertencem ao Workspace,
+      não diretamente ao usuário.
+
+    campaign_rule: >
+      Campanhas pertencem ao Workspace e registram
+      os usuários responsáveis por criação e ações operacionais.
+
+    tenant_security_rule: >
+      Nenhuma requisição, job, webhook, cache, arquivo,
+      consulta ou relatório pode atravessar fronteiras de Workspace.
+
+    authorization_rule: >
+      workspace_id recebido do cliente nunca é prova de autorização.
+
+      Membership e permission devem ser verificadas no servidor.
+
+    official_documentation_rule: >
+      Para APIs, SDKs, autenticação, webhooks, segurança,
+      limites, quotas e billing, documentação oficial atual
+      é a autoridade.
+
+    freshness_rule: >
+      Antes de implementar cada provider, consultar novamente
+      documentação oficial e changelog.
+
+    assumption_rule: >
+      Nunca inventar comportamento de provider.
+
+      Capability não confirmada permanece desabilitada
+      até validação documental e técnica.
+
+    provider_rule: >
+      Providers são infraestrutura substituível.
+
+    credential_rule: >
+      Credenciais reais nunca entram no Git,
+      frontend, README ou logs.
+
+    local_environment_rule: >
+      Docker e Docker Desktop não são requisitos
+      para desenvolvimento local.
+
+    deployment_rule: >
+      A aplicação será posteriormente implantada em VPS.
+
+    documentation_rule: >
+      Documentação é parte obrigatória da implementação.
+
+    beginner_rule: >
+      Documentação deve assumir que o usuário pode nunca
+      ter instalado uma aplicação Node.js em VPS.
+
+    wave_rule: >
+      Uma Wave somente pode ser encerrada após implementação,
+      testes, segurança, documentação e critérios de aceite.
+
+    final_principle: >
+      Build a professional workspace-first RCS platform that is
+      simple to use, modular to maintain, secure to operate,
+      provider-independent, tenant-isolated, documented from
+      authoritative sources and deployable to a VPS without
+      local Docker requirements.
