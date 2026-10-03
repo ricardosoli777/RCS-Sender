@@ -50,7 +50,8 @@ test('register, workspace isolation, workspace switch, logout and login', async 
   await page.getByLabel('Confirme a senha').fill(password);
   await page.getByRole('button', { name: 'Criar conta' }).click();
   await expect(page).toHaveURL('http://127.0.0.1:3100/');
-  await expect(page.getByText('Equipe Alice', { exact: true })).toBeVisible();
+  await expect(page.locator('header').getByText('Equipe Alice', { exact: true })).toBeVisible();
+  await page.screenshot({ path: 'test-results/dashboard-desktop.png', fullPage: true });
   const firstCookies = await page.context().cookies();
   expect(firstCookies.find((cookie) => cookie.name === 'rcs_session')).toMatchObject({ httpOnly: true, sameSite: 'Strict' });
   const firstWorkspaces = await page.request.get('/api/workspaces');
@@ -74,14 +75,46 @@ test('register, workspace isolation, workspace switch, logout and login', async 
     expect((await page.request.get(`/api/workspaces/${workspaceB}/audit`)).status()).toBe(404);
     expect((await bob.request.get(`/api/workspaces/${workspaceA}/audit`)).status()).toBe(404);
 
+    await page.getByRole('navigation').getByRole('link', { name: 'Configurações' }).click();
+    await page.getByLabel('E-mail do membro').fill(`bob-${suffix}@example.test`);
+    await page.getByRole('button', { name: 'Adicionar membro', exact: true }).click();
+    await expect(page.getByRole('row').filter({ hasText: 'Bob' })).toContainText('Leitor');
+    await page.getByRole('button', { name: 'Alterar perfil de Bob', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancelar', exact: true })).toBeFocused();
+    await page.getByLabel('Novo perfil').selectOption('operator');
+    await page.getByRole('button', { name: 'Salvar perfil' }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.getByRole('row').filter({ hasText: 'Bob' })).toContainText('Operador');
+    await page.getByRole('button', { name: 'Remover Alice', exact: true }).click();
+    await page.getByRole('button', { name: 'Confirmar remoção' }).click();
+    await expect(page.getByRole('dialog')).toContainText('O workspace precisa manter um proprietário ativo.');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await page.screenshot({ path: 'test-results/settings-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.screenshot({ path: 'test-results/settings-mobile.png', fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.getByRole('button', { name: 'Remover Bob', exact: true }).click();
+    await page.getByRole('button', { name: 'Confirmar remoção' }).click();
+    await expect(page.getByRole('row').filter({ hasText: 'Bob' })).toHaveCount(0);
+
     const invited = await bob.request.post(`/api/workspaces/${workspaceB}/members`, {
       headers: { Origin: 'http://127.0.0.1:3100', 'X-RCS-Request': '1' }, data: { email, role: 'viewer' }
     });
     expect(invited.status()).toBe(204);
     await page.reload();
-    await page.getByRole('combobox').selectOption(workspaceB);
+    await page.getByLabel('Workspace', { exact: true }).selectOption(workspaceB);
     await expect(page).toHaveURL(new RegExp(`workspace=${workspaceB}`));
+    await expect(page).toHaveURL(/\/settings\?workspace=/);
+    await expect(page.getByText('Apenas proprietários podem gerenciar membros.', { exact: false })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Adicionar membro' })).toHaveCount(0);
     expect((await page.request.get(`/api/workspaces/${workspaceB}/audit`)).status()).toBe(403);
+    await page.getByRole('navigation').getByRole('link', { name: 'Contatos' }).click();
+    await expect(page.getByRole('heading', { name: 'Contatos', exact: true })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/contacts\\?workspace=${workspaceB}`));
+    await page.setViewportSize({ width: 320, height: 812 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.getByRole('button', { name: 'Sair', exact: true }).click();
     await expect(page).toHaveURL(/\/login$/);
     expect((await page.request.get('/api/auth/me')).status()).toBe(401);

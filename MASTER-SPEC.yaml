@@ -2628,6 +2628,11 @@ spec:
     wave_4:
 
       name: "Purple Signal Design System"
+      execution_status: "in_progress"
+      execution_notes:
+        - "Implemented tokens, self-hosted fonts, responsive AppShell and workspace-aware module navigation."
+        - "Settings includes existing-account member management, role changes and native confirmation dialogs."
+        - "Local build, type checks and lint passed; integrated browser and visual validation in progress."
 
       deliverables:
         - "design tokens"

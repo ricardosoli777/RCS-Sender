@@ -1,53 +1,16 @@
-import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import LogoutButton from './logout-button';
-import WorkspaceSelector from './workspace-selector';
-import { trustedApiHeaders } from './security/trusted-proxy';
-
-const sections = [
-  { title: 'Contatos', description: 'Públicos e listas para suas campanhas.' },
-  { title: 'Mensagens', description: 'Modelos RCS reutilizáveis e independentes de provedor.' },
-  { title: 'Campanhas', description: 'Planejamento, envio e acompanhamento em um só lugar.' },
-  { title: 'Integrações', description: 'Conecte provedores e agentes RCS.' }
-];
-
+import Link from 'next/link';
+import { ArrowRight, ShieldCheck, UsersRound, Radio } from 'lucide-react';
+import AppShell, { modules, workspaceHref } from './app-shell';
+import { workspaceData, WorkspaceUnavailable, roleNames } from './workspace';
+import { Badge, Button, Card } from './ui';
 export default async function Home({ searchParams }: { searchParams: Promise<{ workspace?: string }> }) {
-  const cookie = (await cookies()).toString();
-  const apiHeaders = { ...trustedApiHeaders(new Headers(await headers())), cookie };
-  let authenticated = false;
-  try {
-    if (process.env.API_URL && cookie) {
-      const response = await fetch(new URL('/auth/me', process.env.API_URL), {
-        headers: apiHeaders, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
-      });
-      authenticated = response.ok;
-    }
-  } catch { /* Login remains available while the API is unavailable. */ }
-  if (!authenticated) redirect('/login');
-  const { workspace: requestedWorkspace } = await searchParams;
-  let workspaces: { id: string; name: string; role: string }[] = [];
-  let selected = '';
-  let workspaceUnavailable = false;
-  try {
-    const response = await fetch(new URL('/workspaces', process.env.API_URL!), {
-      headers: apiHeaders, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
-    });
-    if (!response.ok) throw new Error('Workspace indisponível');
-    workspaces = (await response.json()).workspaces;
-    selected = requestedWorkspace ?? workspaces[0]?.id ?? '';
-    if (!workspaces.some((item) => item.id === selected)) throw new Error('Workspace indisponível');
-    const context = await fetch(new URL(`/workspaces/${selected}/context`, process.env.API_URL!), {
-      headers: apiHeaders, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
-    });
-    if (!context.ok) throw new Error('Workspace indisponível');
-  } catch { workspaceUnavailable = true; }
-  if (workspaceUnavailable) return <main className="shell loginShell"><h1>Workspace indisponível</h1>
-    <p>Você precisa de um vínculo ativo com o workspace para acessá-lo. Tente novamente ou entre em contato com o proprietário.</p>
-    <a href="/">Voltar ao meu workspace</a><LogoutButton /></main>;
-  return <main className="shell">
-    <header className="topbar"><div className="brand"><span className="brandIcon">◈</span> RCS Sender</div><WorkspaceSelector workspaces={workspaces} selected={selected} /><LogoutButton /></header>
-    <section className="hero"><p className="eyebrow">SIMPLE OUTSIDE · ROBUST INSIDE</p><h1>Mensagens que chegam.<br/><span>Operação que escala.</span></h1><p className="intro">Crie mensagens e campanhas RCS em uma plataforma independente de provedores. A fundação técnica está sendo construída por etapas.</p><div className="heroMeta"><span>● Plataforma em desenvolvimento</span><span>Spec 5.3.0</span></div></section>
-    <section className="modules" aria-label="Módulos previstos">{sections.map((section) => <article className="card" key={section.title}><div className="cardMark">↗</div><h2>{section.title}</h2><p>{section.description}</p></article>)}</section>
-    <footer>RCS Sender · Purple Signal</footer>
-  </main>;
+  const data = await workspaceData((await searchParams).workspace);
+  if (!data) return <WorkspaceUnavailable />;
+  return <AppShell data={data} active="/">
+    <div className="pageHeading"><div><p className="eyebrow">SEU ESPAÇO DE TRABALHO</p><h1>Visão geral</h1><p>Olá, {data.user.name}. Vamos preparar sua operação.</p></div><Badge>Em desenvolvimento</Badge></div>
+    <Card className="welcomeCard"><div><span className="heroIcon"><Radio size={30} /></span><h2>O próximo sinal começa aqui.</h2><p>Seu workspace já está pronto para receber a equipe. Os módulos de envio serão disponibilizados nas próximas etapas.</p><Button asChild><Link href={workspaceHref('/settings', data.selected.id)}>Configurar workspace <ArrowRight size={17} /></Link></Button></div><div className="signalArt" aria-hidden="true"><span /><span /><span /><Radio size={64} /></div></Card>
+    <div className="summaryGrid"><Card><UsersRound size={20} /><p>Workspace ativo</p><strong>{data.selected.name}</strong></Card><Card><ShieldCheck size={20} /><p>Seu perfil de acesso</p><strong>{roleNames[data.context.role]}</strong></Card><Card><Radio size={20} /><p>Operação RCS</p><strong>Em preparação</strong><small>Os envios ainda não estão disponíveis.</small></Card></div>
+    <div className="sectionHeading"><h2>Explore a plataforma</h2><p>Uma operação, do público à conversa.</p></div>
+    <div className="moduleGrid">{modules.slice(1, -1).map(({ path, label, description, icon: Icon }) => <Link key={path} className="moduleCard" href={workspaceHref(path, data.selected.id)}><span className="moduleIcon"><Icon size={21} /></span><ArrowRight className="moduleArrow" size={18} /><h3>{label}</h3><p>{description}</p><span className="moduleStatus">Em construção</span></Link>)}</div>
+  </AppShell>;
 }

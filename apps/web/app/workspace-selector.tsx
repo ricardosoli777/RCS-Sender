@@ -1,14 +1,16 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export default function WorkspaceSelector({ workspaces, selected }: {
   workspaces: { id: string; name: string }[]; selected: string
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   if (workspaces.length === 1) return <span className="workspaceName">{workspaces[0].name}</span>;
   return <label className="workspaceSelector">Workspace
-    <select value={selected} onChange={(event) => { router.push(`/?workspace=${encodeURIComponent(event.target.value)}`); }}>
+    <select value={selected} onChange={(event) => { const query = new URLSearchParams(searchParams); query.set('workspace', event.target.value); router.push(`${pathname}?${query}`); }}>
       {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
     </select>
   </label>;

@@ -33,7 +33,7 @@ As rotas abaixo são da API. No navegador, o proxy web usa o prefixo `/api`.
 
 Mutações exigem `Origin` correspondente a `APP_URL` e `X-RCS-Request: 1`. O cookie é emitido no cadastro ou login. Dados extras no cadastro, incluindo perfil ou ID de workspace, são rejeitados. A última conta proprietária ativa não pode perder o vínculo de proprietário. IDs de membros de outro workspace não são aceitos.
 
-A inclusão de membros é feita pela API para contas já existentes; convite por e-mail e uma interface de gestão ainda não foram implementados. Não são enviados e-mails automaticamente. Mudanças de papel e remoção geram eventos no workspace afetado; workspaces próprios do membro continuam independentes.
+A inclusão de membros está disponível em Configurações para proprietários e usa a API para contas já existentes. A interface lista a equipe, permite alterar perfis e exige confirmação para remoções. Convite por e-mail ainda não foi implementado; não são enviados e-mails automaticamente. Mudanças de papel e remoção geram eventos no workspace afetado; workspaces próprios do membro continuam independentes. A troca de workspace preserva a página aberta e reavalia o acesso.
 
 ## Persistência e auditoria
 
