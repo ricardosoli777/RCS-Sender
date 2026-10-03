@@ -27,13 +27,16 @@ test('register, workspace isolation, workspace switch, logout and login', async 
   expect(policy).not.toMatch(/unsafe-inline|unsafe-eval/);
   expect(await page.locator('script').evaluateAll((scripts) => scripts.map((script) => script.nonce)))
     .toEqual(expect.arrayContaining([nonce]));
-  await page.evaluate(() => {
-    const script = document.createElement('script');
-    script.textContent = "document.documentElement.dataset.injectedScript = 'executed'";
-    document.body.append(script);
-  });
-  expect(await page.locator('html').getAttribute('data-injected-script')).toBeNull();
+  // Inject into the received HTML so Chromium evaluates a parser-inserted script under CSP.
+  await page.route('**/login', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace('<head>',
+      "<head><script>document.documentElement.dataset.injectedScript = 'executed'</script>");
+    expect(body).toContain('dataset.injectedScript');
+    await route.fulfill({ response, body });
+  }, { times: 1 });
   const repeated = await page.goto('/login');
+  expect(await page.locator('html').getAttribute('data-injected-script')).toBeNull();
   expect(repeated!.headers()['content-security-policy']).not.toBe(policy);
   expect(initial!.headers()['x-powered-by']).toBeUndefined();
   expect(JSON.stringify(initial!.headers())).not.toContain('a'.repeat(64));
