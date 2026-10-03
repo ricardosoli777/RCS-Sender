@@ -7,7 +7,7 @@
     "start": "node --env-file=../../.env node_modules/next/dist/bin/next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "lint": "eslint app"
+    "lint": "eslint app proxy.ts next.config.ts"
   },
   "dependencies": {
     "next": "^16.0.0",

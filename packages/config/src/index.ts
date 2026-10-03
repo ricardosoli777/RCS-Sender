@@ -15,10 +15,17 @@ const serverSchema = z.object({
   }, 'Use a origem HTTP(S) da API, sem caminhos ou credenciais'),
   DATABASE_URL: z.url().refine((url) => url.startsWith('postgresql://') || url.startsWith('postgres://'), 'Use uma URL PostgreSQL'),
   REDIS_URL: z.url().refine((url) => url.startsWith('redis://') || url.startsWith('rediss://'), 'Use uma URL Redis'),
+  RCS_EDGE_PROXY_SECRET: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  RCS_API_PROXY_SECRET: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')
 }).superRefine((config, context) => {
   if (config.NODE_ENV === 'production' && !config.APP_URL.startsWith('https://')) {
     context.addIssue({ code: 'custom', path: ['APP_URL'], message: 'HTTPS obrigatório em produção' });
+  }
+  if (config.NODE_ENV === 'production' || config.RCS_EDGE_PROXY_SECRET || config.RCS_API_PROXY_SECRET) {
+    if (!config.RCS_EDGE_PROXY_SECRET || !config.RCS_API_PROXY_SECRET || config.RCS_EDGE_PROXY_SECRET === config.RCS_API_PROXY_SECRET) {
+      context.addIssue({ code: 'custom', path: ['RCS_API_PROXY_SECRET'], message: 'Configure dois segredos de proxy distintos' });
+    }
   }
 });
 

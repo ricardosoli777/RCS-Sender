@@ -1,7 +1,8 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import LogoutButton from './logout-button';
 import WorkspaceSelector from './workspace-selector';
+import { trustedApiHeaders } from './security/trusted-proxy';
 
 const sections = [
   { title: 'Contatos', description: 'Públicos e listas para suas campanhas.' },
@@ -12,11 +13,12 @@ const sections = [
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ workspace?: string }> }) {
   const cookie = (await cookies()).toString();
+  const apiHeaders = { ...trustedApiHeaders(new Headers(await headers())), cookie };
   let authenticated = false;
   try {
     if (process.env.API_URL && cookie) {
       const response = await fetch(new URL('/auth/me', process.env.API_URL), {
-        headers: { cookie }, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
+        headers: apiHeaders, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
       });
       authenticated = response.ok;
     }
@@ -28,14 +30,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
   let workspaceUnavailable = false;
   try {
     const response = await fetch(new URL('/workspaces', process.env.API_URL!), {
-      headers: { cookie }, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
+      headers: apiHeaders, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
     });
     if (!response.ok) throw new Error('Workspace indisponível');
     workspaces = (await response.json()).workspaces;
     selected = requestedWorkspace ?? workspaces[0]?.id ?? '';
     if (!workspaces.some((item) => item.id === selected)) throw new Error('Workspace indisponível');
     const context = await fetch(new URL(`/workspaces/${selected}/context`, process.env.API_URL!), {
-      headers: { cookie }, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
+      headers: apiHeaders, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(5000)
     });
     if (!context.ok) throw new Error('Workspace indisponível');
   } catch { workspaceUnavailable = true; }

@@ -15,7 +15,7 @@ const password = 'test-password-long-enough';
 let passwordHash: string;
 beforeAll(async () => { passwordHash = await hashPassword(password); });
 
-function fixture(secureCookies = false) {
+function fixture(secureCookies = false, proxySecret?: string) {
   const user: LoginUser = { id: '5d58f1ae-8b82-46e2-b030-331980fbd649', name: 'Test User', email: 'owner@example.test',
     password_hash: passwordHash, status: 'active', disabled_at: null };
   const membership: { role: Role; active: boolean; workspaceActive: boolean } = { role: 'owner', active: true, workspaceActive: true };
@@ -59,7 +59,7 @@ function fixture(secureCookies = false) {
     ping: async () => 'PONG'
   } as unknown as Redis;
   const app = createApp({ db: {} as Pool, redis, authStore: store, workspaceStore }, {
-    appUrl: secureCookies ? 'https://app.example.test' : 'http://localhost:3000', secureCookies
+    appUrl: secureCookies ? 'https://app.example.test' : 'http://localhost:3000', secureCookies, proxySecret
   });
   const headers = { origin: secureCookies ? 'https://app.example.test' : 'http://localhost:3000', 'x-rcs-request': '1' };
   const login = () => app.inject({ method: 'POST', url: '/auth/login', headers, payload: { email: user.email, password } });
@@ -67,6 +67,28 @@ function fixture(secureCookies = false) {
 }
 
 describe('authentication and authorization', () => {
+  it('keeps client rate limits separate and rejects spoofed or untrusted proxy headers', async () => {
+    const proxySecret = 'b'.repeat(64);
+    const f = fixture(false, proxySecret);
+    const attempt = (ip: string, token = proxySecret, remoteAddress = '127.0.0.1') => f.app.inject({
+      method: 'POST', url: '/auth/login', remoteAddress,
+      headers: { ...f.headers, 'x-forwarded-for': ip, 'x-rcs-proxy-token': token },
+      payload: { email: f.user.email, password: 'wrong' }
+    });
+    try {
+      for (const [ip, token, peer] of [['192.0.2.10', '', '127.0.0.1'], ['192.0.2.10', 'a'.repeat(64), '127.0.0.1'],
+        ['192.0.2.10, 192.0.2.11', proxySecret, '127.0.0.1'], ['192.0.2.10', proxySecret, '203.0.113.5']]) {
+        expect((await attempt(ip!, token!, peer!)).statusCode).toBe(403);
+      }
+      expect(f.store.findUser).not.toHaveBeenCalled();
+      for (let i = 0; i < 5; i++) expect((await attempt('192.0.2.10')).statusCode).toBe(401);
+      expect((await attempt('192.0.2.10')).statusCode).toBe(429);
+      expect((await attempt('192.0.2.11')).statusCode).toBe(401);
+      for (let i = 0; i < 5; i++) expect((await attempt(`2001:db8::${i + 1}`)).statusCode).toBe(401);
+      expect((await attempt('2001:db8::99')).statusCode).toBe(429);
+    } finally { await f.app.close(); }
+  });
+
   it('issues an opaque HttpOnly cookie, persists only its hash, and revokes it on logout', async () => {
     const f = fixture();
     try {

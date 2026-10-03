@@ -8,6 +8,8 @@ export function createLogger(component: string, destination?: DestinationStream)
       paths: [
         'req.headers.authorization',
         'req.headers.cookie',
+        'req.headers["x-rcs-edge-token"]',
+        'req.headers["x-rcs-proxy-token"]',
         'res.headers["set-cookie"]',
         'password',
         'token',

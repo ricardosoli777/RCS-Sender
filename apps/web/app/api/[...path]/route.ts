@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import { trustedApiHeaders } from '../../security/trusted-proxy';
 
 export const runtime = 'nodejs';
 
@@ -17,12 +18,12 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     const api = new URL(process.env.API_URL);
     if (!['http:', 'https:'].includes(api.protocol) || api.username || api.password
       || api.pathname !== '/' || api.search || api.hash) throw new Error('API_URL inválida');
-    const headers = new Headers();
+    const headers = new Headers(trustedApiHeaders(request.headers));
     for (const name of ['cookie', 'content-type', 'origin', 'x-rcs-request']) {
       const value = request.headers.get(name);
       if (value) headers.set(name, value);
     }
-    // Do not trust forwarded IP headers. All browser requests share the API proxy limit for now.
+    // Forward only the single client IP authenticated by the configured edge proxy.
     let body: string | undefined;
     const signal = AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]);
     signal.throwIfAborted();

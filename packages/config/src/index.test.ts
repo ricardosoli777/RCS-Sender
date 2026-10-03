@@ -23,9 +23,18 @@ describe('loadServerConfig', () => {
 
   it('exige HTTPS na interface em produção e rejeita origens com credenciais ou caminhos', () => {
     expect(() => loadServerConfig({ ...valid, NODE_ENV: 'production' })).toThrow();
-    expect(loadServerConfig({ ...valid, NODE_ENV: 'production', APP_URL: 'https://app.example.test' }).APP_URL).toBe('https://app.example.test');
+    expect(loadServerConfig({ ...valid, NODE_ENV: 'production', APP_URL: 'https://app.example.test',
+      RCS_EDGE_PROXY_SECRET: 'a'.repeat(64), RCS_API_PROXY_SECRET: 'b'.repeat(64) }).APP_URL).toBe('https://app.example.test');
     for (const APP_URL of ['ftp://localhost', 'http://user:secret@localhost', 'http://localhost/path']) {
       expect(() => loadServerConfig({ ...valid, APP_URL })).toThrow();
+    }
+  });
+  it('requires distinct proxy secrets in production and rejects partial configuration without leaking values', () => {
+    for (const secrets of [{}, { RCS_EDGE_PROXY_SECRET: 'a'.repeat(64) },
+      { RCS_EDGE_PROXY_SECRET: 'a'.repeat(64), RCS_API_PROXY_SECRET: 'a'.repeat(64) },
+      { RCS_EDGE_PROXY_SECRET: 'a'.repeat(64), RCS_API_PROXY_SECRET: 'short-secret' }]) {
+      expect(() => loadServerConfig({ ...valid, NODE_ENV: 'production', APP_URL: 'https://app.example.test', ...secrets }))
+        .toThrow('Configuração inválida');
     }
   });
 });

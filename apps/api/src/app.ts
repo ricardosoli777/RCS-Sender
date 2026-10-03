@@ -1,4 +1,6 @@
 import Fastify, { type FastifyBaseLogger, type FastifyError } from 'fastify';
+import { timingSafeEqual } from 'node:crypto';
+import { isIP } from 'node:net';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import type { Pool } from 'pg';
@@ -14,9 +16,23 @@ import { registerWorkspaceRoutes } from './modules/workspaces/presentation/route
 import { WorkspaceAccessError, WorkspaceService } from './modules/workspaces/application/workspace-service.js';
 
 export function createApp(deps: { db: Pool; redis: Redis; authStore?: AuthStore; workspaceStore?: WorkspaceStore },
-  auth: { appUrl: string; secureCookies: boolean }) {
+  auth: { appUrl: string; secureCookies: boolean; proxySecret?: string }) {
+  if (auth.proxySecret && !/^[a-f0-9]{64}$/.test(auth.proxySecret)) throw new Error('Segredo de proxy inválido');
   const app = Fastify({ loggerInstance: createLogger('api') as FastifyBaseLogger, bodyLimit: 1_048_576,
+    trustProxy: auth.proxySecret ? (address) => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(address) : false,
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } } });
+
+  app.addHook('onRequest', async (request, reply) => {
+    if (!auth.proxySecret || request.headers['x-forwarded-for'] === undefined) return;
+    const token = request.headers['x-rcs-proxy-token'];
+    const ip = request.headers['x-forwarded-for'];
+    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress ?? '')
+      || typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)
+      || !timingSafeEqual(Buffer.from(token), Buffer.from(auth.proxySecret))
+      || typeof ip !== 'string' || !isIP(ip) || ip.includes('%')) {
+      return reply.code(403).header('Cache-Control', 'no-store').send({ message: 'Proxy não autorizado.' });
+    }
+  });
 
   app.register(helmet);
   app.register(rateLimit, {

@@ -6,7 +6,8 @@ import { createApp } from './app.js';
 const config = loadServerConfig(process.env);
 const db = new Pool({ connectionString: config.DATABASE_URL });
 const redis = new Redis(config.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 1 });
-const app = createApp({ db, redis }, { appUrl: config.APP_URL, secureCookies: config.NODE_ENV === 'production' });
+const app = createApp({ db, redis }, { appUrl: config.APP_URL, secureCookies: config.NODE_ENV === 'production',
+  proxySecret: config.RCS_API_PROXY_SECRET });
 
 async function shutdown() {
   await app.close();

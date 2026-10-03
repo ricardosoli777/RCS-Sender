@@ -2000,6 +2000,14 @@ spec:
         proxy_timeout_includes_upload: true
         proxy_client_disconnect_cancels_request: true
         client_forwarded_ip_headers_trusted: false
+        authenticated_edge_client_ip: true
+        edge_client_ip_header: "X-RCS-Client-IP"
+        edge_authentication_header: "X-RCS-Edge-Token"
+        api_proxy_authentication_header: "X-RCS-Proxy-Token"
+        proxy_secrets_distinct: true
+        production_proxy_secrets_required: true
+        api_forwarded_client_ip_requires_loopback_peer: true
+        IPv6_rate_limit_subnet_bits: 64
         production_trusted_proxy_validation_pending: true
 
     authorization:
@@ -2042,8 +2050,13 @@ spec:
       frame_options: "DENY"
       referrer_policy: "no-referrer"
       permissions_policy: "camera=(), microphone=(), geolocation=()"
-      content_security_policy: "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
-      script_policy_with_nonces_pending: true
+      content_security_policy: "per-request nonce; default-src self; script-src self nonce strict-dynamic; style-src self nonce; connect-src self; img-src self data blob; font-src self; object-src none; base-uri self; form-action self; frame-ancestors none"
+      nonce_random_bytes: 32
+      nonce_generated_server_side: true
+      nonce_pages_dynamic: true
+      script_unsafe_inline_production: false
+      script_unsafe_eval_production: false
+      script_policy_with_nonces_pending: false
       powered_by_header: false
 
 
@@ -2593,6 +2606,7 @@ spec:
       execution_notes:
         - "Initial headers, encryption, rate limiting, CSRF controls, workspace authorization and audit implemented."
         - "Web security headers, upload timeout and disconnect cancellation, and root/response-cookie log redaction implemented."
+        - "Per-request script nonces and authenticated proxy client IP with separate edge/API secrets implemented; integration validation pending."
         - "Validated in CI for 771967a on 2026-10-03: build, types, lint, 32 tests and Chromium E2E with web header assertions."
         - "Evidence: https://github.com/ricardosoli777/RCS-Sender/actions/runs/37127239589"
         - "Production proxy limits and remaining security acceptance require validation."
