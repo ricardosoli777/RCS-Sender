@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ProviderRegistry, activationChecks, capabilityMatrix, type RcsProvider, type ProviderEvidence } from '@rcs/providers';
 import { ProviderService } from './provider-service.js';
-import type { PgProviderStore } from '../infrastructure/pg-provider-store.js';
+import type { ProviderStore } from '../domain/contracts.js';
 import type { WorkspaceContext } from '../../workspaces/domain/contracts.js';
 const context: WorkspaceContext = { workspace_id: 'workspace', user_id: 'user', role: 'owner', permissions: ['providers.manage'] };
 const evidence: ProviderEvidence = { documentPath: 'docs/providers/test-fixture.md', reviewedAt: '2026-10-03', references: ['https://example.test/local-fixture'], checks: Object.fromEntries(activationChecks.map((key) => [key, true])) as ProviderEvidence['checks'] };
@@ -14,7 +14,7 @@ function setup() {
     send: unsupported, verifyWebhook: unsupported, parseWebhook: unsupported, normalizeEvent: () => null, getHealth: unsupported };
   const registry = new ProviderRegistry(); registry.register(adapter, evidence);
   const create = vi.fn(async () => ({ id: 'connection', status: 'unverified' }));
-  const service = new ProviderService(registry, { create } as unknown as PgProviderStore);
+  const service = new ProviderService(registry, { create } as unknown as ProviderStore);
   return { service, create, validateCredentials };
 }
 describe('provider service credential boundary', () => {

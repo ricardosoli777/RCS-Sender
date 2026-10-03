@@ -5,14 +5,13 @@ import type { Credentials } from '@rcs/providers';
 import type { WorkspaceContext } from '../../workspaces/domain/contracts.js';
 import { WorkspaceAccessError } from '../../workspaces/application/workspace-service.js';
 import { transaction } from '../../shared/infrastructure/transaction.js';
+import type { ProviderConnection, ProviderStore } from '../domain/contracts.js';
 
-export type ProviderConnection = { id: string; workspace_id: string; provider_id: string; name: string; environment: string;
-  status: 'unverified' | 'connected' | 'disconnected' | 'disabled'; created_at: Date; updated_at: Date };
 const columns = 'id, workspace_id, provider_id, name, environment, status, created_at, updated_at';
 function credentialContext(connection: ProviderConnection) {
   return JSON.stringify(['provider-credentials-v1', connection.workspace_id, connection.id, connection.provider_id, connection.environment]);
 }
-export class PgProviderStore {
+export class PgProviderStore implements ProviderStore {
   constructor(private readonly pool: Pool, private readonly cipher?: CredentialCipher) {}
 
   private async authorize(client: PoolClient, context: WorkspaceContext) {

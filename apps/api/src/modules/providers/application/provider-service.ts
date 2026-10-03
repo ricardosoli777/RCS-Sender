@@ -1,12 +1,12 @@
 import { ProviderRegistry, type Credentials } from '@rcs/providers';
 import type { WorkspaceContext } from '../../workspaces/domain/contracts.js';
-import { PgProviderStore } from '../infrastructure/pg-provider-store.js';
+import type { ProviderStore } from '../domain/contracts.js';
 
 export class ProviderInputError extends Error {
   constructor(readonly reason: 'unavailable' | 'invalid' | 'not_found') { super('Provider operation rejected'); }
 }
 export class ProviderService {
-  constructor(private readonly registry: ProviderRegistry, private readonly store: PgProviderStore) {}
+  constructor(private readonly registry: ProviderRegistry, private readonly store: ProviderStore) {}
   catalog() { return this.registry.list().map(({ metadata, capabilities, limits, active }) => ({ metadata, capabilities, limits, active })); }
   list(context: WorkspaceContext) { return this.store.list(context); }
   private validate(providerId: string, environment: string, credentials: Credentials) {
