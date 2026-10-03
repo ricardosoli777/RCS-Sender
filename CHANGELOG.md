@@ -2,6 +2,7 @@
 
 ## Em desenvolvimento — Fundação 5.3.0
 
+- Tipos do Node.js declarados na raiz e no projeto E2E, corrigindo a falha da CI em instalações limpas.
 - Master Spec 5.3.0 validado como YAML, com arquitetura por workspaces.
 - Cadastro transacional cria usuário, workspace padrão, vínculo de proprietário e sessão.
 - Login/logout, cookies HttpOnly, expiração absoluta de oito horas e tokens persistidos somente como hash.

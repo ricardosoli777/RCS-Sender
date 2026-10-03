@@ -2485,7 +2485,7 @@ spec:
       execution_notes:
         - "Git, Node.js 24 and pnpm available in the current workspace."
         - "No local .env, PostgreSQL or Redis service configuration found."
-        - "Local repository has no commits; previous CI references are not current-tree evidence."
+        - "Local and remote history confirmed on 2026-10-03; CI for d3d6963 failed at root E2E typecheck before service tests."
 
       tasks:
         - "validate Git"
@@ -2514,7 +2514,8 @@ spec:
       execution_status: "implemented_pending_service_validation"
       execution_notes:
         - "Monorepo code, build, types and lint validated locally."
-        - "Current-tree CI and real-service validation remain pending."
+        - "CI for d3d6963 passed build and package types, then failed at E2E types; root Node.js types corrected locally on 2026-10-03."
+        - "Corrected-tree CI and real-service validation remain pending."
 
       deliverables:
         - "monorepo"
@@ -2543,6 +2544,7 @@ spec:
         - "member API with last active owner protection"
         - "unit security and tenant isolation tests"
         - "real-service integration and Playwright E2E suites prepared"
+        - "root Node.js type dependency and explicit E2E types corrected after inspecting failed CI"
       remaining:
         - "execute PostgreSQL and Redis integration validation"
         - "execute complete Chromium E2E flow"

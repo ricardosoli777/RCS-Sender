@@ -1,14 +1,16 @@
 # Validação da fundação 5.3.0
 
-A Wave 2 foi implementada, mas permanece aberta até executar integração com PostgreSQL/Redis e o fluxo completo no navegador. Esta sessão não encontrou `.env`, serviços locais de PostgreSQL ou Redis. O repositório também não tem commits locais; referências a uma CI antiga não são evidência da árvore atual.
+A Wave 2 foi implementada, mas permanece aberta até executar integração com PostgreSQL/Redis e o fluxo completo no navegador. Na retomada de 03/10/2026, não foram encontrados `.env` nem executáveis de PostgreSQL ou Redis no PATH.
+
+O repositório tem histórico local e remoto. A [CI do commit `d3d6963`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/36989730153), executada em 02/10/2026, passou por instalação, build e TypeScript dos pacotes, mas falhou em `pnpm typecheck:e2e`: os tipos do Node.js não estavam declarados na raiz do monorepo. Ela parou antes de lint, testes de integração e Chromium. A correção declara `@types/node` na raiz, atualiza o lockfile e especifica os tipos no projeto E2E. Ainda é necessário executar a CI com essa correção.
 
 ## Verificações locais
 
-Build, TypeScript e lint foram executados. Testes cobrem cookies, expiração, revogação, contas desativadas, isolamento de workspace, permissões explícitas, cadastro, CSRF, limite de login, falha de Redis e proxy web. A verificação das dependências de produção não encontrou vulnerabilidades conhecidas no npm nesta sessão.
+Em 03/10/2026, build, TypeScript dos pacotes e E2E, lint e 26 testes passaram localmente; três testes com serviços reais foram pulados. A instalação offline com `--frozen-lockfile` e a descoberta do teste Playwright também passaram após a correção dos tipos. Testes cobrem cookies, expiração, revogação, contas desativadas, isolamento de workspace, permissões explícitas, cadastro, CSRF, limite de login, falha de Redis e proxy web. A verificação das dependências de produção feita na sessão anterior não encontrou vulnerabilidades conhecidas no npm; ela não foi repetida nesta retomada.
 
 O controle de requisições segue [OWASP CSRF Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) e a autorização segue [OWASP Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html). A ordem dos hooks foi conferida na [documentação do Fastify](https://fastify.dev/docs/latest/Reference/Hooks/), o proxy nos [Route Handlers do Next.js](https://nextjs.org/docs/app/getting-started/route-handlers) e a configuração de E2E em [Playwright Web Server](https://playwright.dev/docs/test-webserver).
 
-Testes com serviços reais ficam desabilitados sem `RUN_SERVICE_TESTS=1`; isso não conta como validação integrada. O teste Playwright foi preparado para cadastro, login, logout, isolamento entre duas contas e troca de workspace. A CI foi configurada para executá-lo, mas ainda não há resultado dessa execução.
+Testes com serviços reais ficam desabilitados sem `RUN_SERVICE_TESTS=1`; isso não conta como validação integrada. O teste Playwright foi preparado para cadastro, login, logout, isolamento entre duas contas e troca de workspace. A CI está configurada para executá-lo, mas a execução consultada parou antes dessa etapa.
 
 ## Comandos de código
 
@@ -38,6 +40,7 @@ Para o fluxo completo no Chromium, após build:
 
 ```powershell
 pnpm exec playwright install chromium
+$env:RUN_SERVICE_TESTS='1'
 pnpm test:e2e
 ```
 
