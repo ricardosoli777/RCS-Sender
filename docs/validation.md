@@ -4,6 +4,8 @@ A Wave 2 foi validada na [CI do commit `982fe2f`](https://github.com/ricardosoli
 
 Não foram encontrados `.env` nem executáveis de PostgreSQL ou Redis no PATH local. A validação integrada ocorreu em serviços temporários da CI; a instalação local com serviços reais continua pendente na Wave 0.
 
+Na Wave 3, a [CI do commit `771967a`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37127239589) passou em 03/10/2026 por build, TypeScript, lint, 32 testes e E2E no Chromium. Os testes novos verificam cancelamento de uploads parados/desconectados antes de chegar à API, liberação do leitor do corpo e ocultação de segredos e cookies nos logs. O E2E confere cabeçalhos de segurança da interface e ausência de `X-Powered-By` e mantém o fluxo de autenticação e workspaces. A Wave 3 permanece aberta: limites por cliente atrás do proxy público, política de scripts com nonces e os critérios restantes de segurança ainda precisam de validação.
+
 O repositório tem histórico local e remoto. A [CI do commit `d3d6963`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/36989730153), executada em 02/10/2026, falhou em `pnpm typecheck:e2e`: os tipos do Node.js não estavam declarados na raiz do monorepo. A retomada corrigiu essa dependência, o conflito UUID/texto na auditoria de criação de workspace e o nível de log inválido do servidor E2E. O teste integrado agora confere também os IDs do workspace e do autor no evento de criação. A execução bem-sucedida acima valida as três correções.
 
 ## Verificações locais
