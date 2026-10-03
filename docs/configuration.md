@@ -12,7 +12,7 @@ Copie `.env.example` para `.env` na raiz. O `.env` não deve ser commitado.
 | `REDIS_URL` | Conexão Redis de desenvolvimento. |
 | `LOG_LEVEL` | Nível dos logs. |
 | `RCS_EDGE_PROXY_SECRET` | Segredo hexadecimal de 64 caracteres do proxy público para a interface. Obrigatório em produção. |
-| `RCS_API_PROXY_SECRET` | Segredo hexadecimal de 64 caracteres da interface para a API. Obrigatório em produção, distinto do segredo público. |
+| `RCS_API_PROXY_SECRET` | Segredo hexadecimal de 64 caracteres da interface para a API. Obrigatório em produção, distinto do segredo da borda. |
 
 A API e o worker falham na inicialização quando faltam variáveis obrigatórias. `pnpm dev` e o comando `start` do web carregam o `.env` da raiz; os endpoints web usam `API_URL` em tempo de execução. Endereços de produção, webhooks e credenciais de provedores serão configurados nas respectivas waves.
 

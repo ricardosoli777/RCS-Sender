@@ -2606,10 +2606,12 @@ spec:
       execution_notes:
         - "Initial headers, encryption, rate limiting, CSRF controls, workspace authorization and audit implemented."
         - "Web security headers, upload timeout and disconnect cancellation, and root/response-cookie log redaction implemented."
-        - "Per-request script nonces and authenticated proxy client IP with separate edge/API secrets implemented; integration validation pending."
+        - "Per-request script nonces and authenticated proxy client IP with separate edge/API secrets validated in CI for 33c37f8 on 2026-10-03."
+        - "37 tests and 2 E2E scenarios passed, including independent Redis client limits and blocking a script injected into response HTML."
+        - "Evidence: https://github.com/ricardosoli777/RCS-Sender/actions/runs/37128356107"
         - "Validated in CI for 771967a on 2026-10-03: build, types, lint, 32 tests and Chromium E2E with web header assertions."
         - "Evidence: https://github.com/ricardosoli777/RCS-Sender/actions/runs/37127239589"
-        - "Production proxy limits and remaining security acceptance require validation."
+        - "Application proxy limits and script policy validated; actual VPS proxy, HTTPS and firewall validation remains pending."
 
       deliverables:
         - "authorization"

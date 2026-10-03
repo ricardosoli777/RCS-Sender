@@ -3,6 +3,7 @@
 ## Em desenvolvimento — Fundação 5.3.0
 
 - Wave 3: CSP com nonces por requisição e limites Redis por IP autenticado na cadeia proxy público → web → API, com segredos distintos.
+- CI da Wave 3 aprovada em 03/10/2026: 37 testes e dois cenários E2E, incluindo injeção no HTML e limites independentes com Redis real.
 - Wave 3: cabeçalhos de segurança web, prazo para uploads no proxy, cancelamento por desconexão e ocultação de segredos/cookies nos logs.
 - Tipos do Node.js declarados na raiz e no projeto E2E, corrigindo a falha da CI em instalações limpas.
 - Conversão explícita de UUID na auditoria de criação de workspace, corrigindo o cadastro com PostgreSQL real.
