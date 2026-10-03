@@ -11,7 +11,10 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     || (request.method === 'GET' && ['auth/me', 'workspaces'].includes(target))
     || (request.method === 'GET' && new RegExp(`^workspaces/${uuid}/(context|audit|members)$`).test(target))
     || (request.method === 'POST' && new RegExp(`^workspaces/${uuid}/members$`).test(target))
-    || (['PATCH', 'DELETE'].includes(request.method) && new RegExp(`^workspaces/${uuid}/members/${uuid}$`).test(target));
+    || (['PATCH', 'DELETE'].includes(request.method) && new RegExp(`^workspaces/${uuid}/members/${uuid}$`).test(target))
+    || (request.method === 'GET' && new RegExp(`^workspaces/${uuid}/providers(?:/catalog)?$`).test(target))
+    || (request.method === 'POST' && new RegExp(`^workspaces/${uuid}/providers$`).test(target))
+    || (request.method === 'PUT' && new RegExp(`^workspaces/${uuid}/providers/${uuid}/credentials$`).test(target));
   if (!allowed) return Response.json({ message: 'Rota não encontrada.' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
   try {
     if (!process.env.API_URL) throw new Error('API_URL ausente');
@@ -39,7 +42,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
           signal.throwIfAborted();
           if (chunk.done) break;
           bytes += chunk.value.byteLength;
-          if (bytes > 8192) {
+          if (bytes > (target.includes('/providers') ? 65536 : 8192)) {
             cancel();
             return Response.json({ message: 'Requisição muito grande.' }, { status: 413, headers: { 'Cache-Control': 'no-store' } });
           }
@@ -70,4 +73,5 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
 export const GET = proxy;
 export const POST = proxy;
 export const PATCH = proxy;
+export const PUT = proxy;
 export const DELETE = proxy;

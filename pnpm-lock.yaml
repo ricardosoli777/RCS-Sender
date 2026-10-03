@@ -41,6 +41,9 @@ importers:
       '@rcs/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@rcs/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
       '@rcs/security':
         specifier: workspace:*
         version: link:../../packages/security
@@ -203,6 +206,15 @@ importers:
       eslint:
         specifier: ^9.0.0
         version: 9.39.5(jiti@2.7.0)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@24.19.1)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.15)
+
+  packages/providers:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.1
       vitest:
         specifier: ^3.0.0
         version: 3.2.7(@types/node@24.19.1)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.15)

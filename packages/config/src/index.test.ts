@@ -9,6 +9,16 @@ const valid = {
 };
 
 describe('loadServerConfig', () => {
+  it('validates the credential key ring and never leaks invalid key values', () => {
+    const ring = JSON.stringify({ key1: 'c'.repeat(64), key2: 'd'.repeat(64) });
+    expect(loadServerConfig({ ...valid, RCS_CREDENTIAL_KEYS: ring, RCS_CREDENTIAL_ACTIVE_KEY: 'key2' }).RCS_CREDENTIAL_ACTIVE_KEY).toBe('key2');
+    expect(() => loadServerConfig({ ...valid, RCS_CREDENTIAL_KEYS: ring, RCS_CREDENTIAL_ACTIVE_KEY: 'key1', RCS_EDGE_PROXY_SECRET: 'c'.repeat(64), RCS_API_PROXY_SECRET: 'b'.repeat(64) })).toThrow();
+    for (const config of [{ RCS_CREDENTIAL_KEYS: 'private-secret' }, { RCS_CREDENTIAL_KEYS: '{}' },
+      { RCS_CREDENTIAL_KEYS: ring }, { RCS_CREDENTIAL_KEYS: ring, RCS_CREDENTIAL_ACTIVE_KEY: 'absent' }]) {
+      expect(() => loadServerConfig({ ...valid, ...config })).toThrow('Configuração inválida');
+      try { loadServerConfig({ ...valid, ...config }); } catch (error) { expect(String(error)).not.toContain('private-secret'); expect(String(error)).not.toContain('c'.repeat(64)); }
+    }
+  });
   it('falha sem infraestrutura configurada', () => {
     expect(() => loadServerConfig({})).toThrow('Configuração inválida');
   });

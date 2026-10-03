@@ -11,6 +11,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@rcs/providers": "workspace:*",
     "@rcs/security": "workspace:*",
     "@rcs/database": "workspace:*",
     "@rcs/config": "workspace:*",

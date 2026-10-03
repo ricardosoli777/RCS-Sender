@@ -1,11 +1,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { GET, POST, PATCH } from './[...path]/route';
+import { GET, POST, PATCH, PUT } from './[...path]/route';
 
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const uuid = 'a3a89226-3aef-4fc8-b5e6-12fae6ed1149';
 
 describe('same-origin API proxy', () => {
+  it('forwards bounded credential replacements and rejects secret reads and unsupported provider routes', async () => {
+    vi.stubEnv('API_URL', 'http://127.0.0.1:3001');
+    const fetch = vi.fn(async () => new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch);
+    const path = ['workspaces', uuid, 'providers', uuid, 'credentials'];
+    const response = await PUT(new NextRequest('http://localhost:3000/api/test', { method: 'PUT', body: JSON.stringify({ credentials: { apiKey: 'test'.repeat(2500) } }) }), { params: Promise.resolve({ path }) });
+    expect(response.status).toBe(204); expect(fetch).toHaveBeenCalledOnce();
+    fetch.mockClear();
+    expect((await GET(new NextRequest('http://localhost:3000/api/test'), { params: Promise.resolve({ path }) })).status).toBe(404);
+    expect((await POST(new NextRequest('http://localhost:3000/api/test', { method: 'POST', body: 'a'.repeat(65537) }), { params: Promise.resolve({ path: ['workspaces', uuid, 'providers'] }) })).status).toBe(413);
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it.each(['timeout', 'disconnect'])('cancels a stalled upload on %s before contacting the API', async (reason) => {
     vi.stubEnv('API_URL', 'http://127.0.0.1:3001');
     const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);

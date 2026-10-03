@@ -56,6 +56,10 @@ test('register, workspace isolation, workspace switch, logout and login', async 
   expect(firstCookies.find((cookie) => cookie.name === 'rcs_session')).toMatchObject({ httpOnly: true, sameSite: 'Strict' });
   const firstWorkspaces = await page.request.get('/api/workspaces');
   const workspaceA = (await firstWorkspaces.json()).workspaces[0].id;
+  const providerConnections = await page.request.get(`/api/workspaces/${workspaceA}/providers`);
+  expect(providerConnections.status()).toBe(200);
+  expect(await providerConnections.json()).toEqual({ connections: [] });
+  expect(await (await page.request.get(`/api/workspaces/${workspaceA}/providers/catalog`)).json()).toEqual({ providers: [] });
 
   const bobContext = await browser.newContext({ baseURL: 'http://127.0.0.1:3100',
     extraHTTPHeaders: { 'x-rcs-edge-token': 'a'.repeat(64), 'x-rcs-client-ip': '192.0.2.11' } });
@@ -73,6 +77,7 @@ test('register, workspace isolation, workspace switch, logout and login', async 
     const workspaceB = (await bobWorkspaces.json()).workspaces[0].id;
     expect((await page.request.get(`/api/workspaces/${workspaceB}/context`)).status()).toBe(404);
     expect((await page.request.get(`/api/workspaces/${workspaceB}/audit`)).status()).toBe(404);
+    expect((await page.request.get(`/api/workspaces/${workspaceB}/providers`)).status()).toBe(404);
     expect((await bob.request.get(`/api/workspaces/${workspaceA}/audit`)).status()).toBe(404);
 
     await page.getByRole('navigation').getByRole('link', { name: 'Configurações' }).click();
@@ -113,6 +118,7 @@ test('register, workspace isolation, workspace switch, logout and login', async 
     await expect(page.getByText('Apenas proprietários podem gerenciar membros.', { exact: false })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Adicionar membro' })).toHaveCount(0);
     expect((await page.request.get(`/api/workspaces/${workspaceB}/audit`)).status()).toBe(403);
+    expect((await page.request.get(`/api/workspaces/${workspaceB}/providers`)).status()).toBe(403);
     await page.getByRole('navigation').getByRole('link', { name: 'Contatos' }).click();
     await expect(page.getByRole('heading', { name: 'Contatos', exact: true })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`/contacts\\?workspace=${workspaceB}`));

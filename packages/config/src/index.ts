@@ -1,4 +1,12 @@
 import { z } from 'zod';
+const credentialKeys = z.string().transform((value, context) => {
+  try {
+    const parsed = z.record(z.string().regex(/^[A-Za-z0-9_-]{1,32}$/), z.string().regex(/^[a-f0-9]{64}$/)).safeParse(JSON.parse(value));
+    if (parsed.success && Object.keys(parsed.data).length > 0) return parsed.data;
+  } catch { /* Configuration errors identify the key, never its value. */ }
+  context.addIssue({ code: 'custom', message: 'Chaves de credenciais inválidas' });
+  return z.NEVER;
+});
 
 const serverSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -17,8 +25,18 @@ const serverSchema = z.object({
   REDIS_URL: z.url().refine((url) => url.startsWith('redis://') || url.startsWith('rediss://'), 'Use uma URL Redis'),
   RCS_EDGE_PROXY_SECRET: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   RCS_API_PROXY_SECRET: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  RCS_CREDENTIAL_KEYS: credentialKeys.optional(),
+  RCS_CREDENTIAL_ACTIVE_KEY: z.string().regex(/^[A-Za-z0-9_-]{1,32}$/).optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')
 }).superRefine((config, context) => {
+  if (config.RCS_CREDENTIAL_KEYS || config.RCS_CREDENTIAL_ACTIVE_KEY) {
+    if (!config.RCS_CREDENTIAL_KEYS || !config.RCS_CREDENTIAL_ACTIVE_KEY || !Object.hasOwn(config.RCS_CREDENTIAL_KEYS, config.RCS_CREDENTIAL_ACTIVE_KEY)) {
+      context.addIssue({ code: 'custom', path: ['RCS_CREDENTIAL_ACTIVE_KEY'], message: 'Chave ativa ausente' });
+    }
+    if (Object.values(config.RCS_CREDENTIAL_KEYS ?? {}).some((key) => key === config.RCS_EDGE_PROXY_SECRET || key === config.RCS_API_PROXY_SECRET)) {
+      context.addIssue({ code: 'custom', path: ['RCS_CREDENTIAL_KEYS'], message: 'Use chaves distintas dos segredos de proxy' });
+    }
+  }
   if (config.NODE_ENV === 'production' && !config.APP_URL.startsWith('https://')) {
     context.addIssue({ code: 'custom', path: ['APP_URL'], message: 'HTTPS obrigatório em produção' });
   }

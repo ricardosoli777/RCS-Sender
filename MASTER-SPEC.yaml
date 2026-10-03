@@ -1888,6 +1888,7 @@ spec:
       - "member.role_changed"
       - "member.removed"
       - "provider.connected"
+      - "provider.connection_created"
       - "provider.credentials_updated"
       - "provider.disconnected"
       - "message.created"
@@ -2652,6 +2653,12 @@ spec:
     wave_5:
 
       name: "Provider Core"
+      execution_status: "in_progress"
+      execution_notes:
+        - "Canonical contracts, verified-capability checks, activation-gated registry and provider evidence template implemented."
+        - "Workspace connections and context-bound encrypted credentials persist transactionally with audit and fresh authorization."
+        - "Public API lists metadata and replaces credentials without exposing secrets; no external adapter is registered yet."
+        - "Local checks passed; PostgreSQL/Redis integration and browser validation in progress."
 
       deliverables:
         - "RcsProvider"

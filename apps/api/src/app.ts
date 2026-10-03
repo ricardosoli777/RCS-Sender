@@ -14,8 +14,13 @@ import type { WorkspaceStore } from './modules/workspaces/domain/contracts.js';
 import { PgWorkspaceStore } from './modules/workspaces/infrastructure/pg-workspace-store.js';
 import { registerWorkspaceRoutes } from './modules/workspaces/presentation/routes.js';
 import { WorkspaceAccessError, WorkspaceService } from './modules/workspaces/application/workspace-service.js';
+import { ProviderRegistry } from '@rcs/providers';
+import type { CredentialCipher } from '@rcs/security';
+import { PgProviderStore } from './modules/providers/infrastructure/pg-provider-store.js';
+import { ProviderInputError, ProviderService } from './modules/providers/application/provider-service.js';
+import { registerProviderRoutes } from './modules/providers/presentation/routes.js';
 
-export function createApp(deps: { db: Pool; redis: Redis; authStore?: AuthStore; workspaceStore?: WorkspaceStore },
+export function createApp(deps: { db: Pool; redis: Redis; authStore?: AuthStore; workspaceStore?: WorkspaceStore; providerRegistry?: ProviderRegistry; credentialCipher?: CredentialCipher },
   auth: { appUrl: string; secureCookies: boolean; proxySecret?: string }) {
   if (auth.proxySecret && !/^[a-f0-9]{64}$/.test(auth.proxySecret)) throw new Error('Segredo de proxy inválido');
   const app = Fastify({ loggerInstance: createLogger('api') as FastifyBaseLogger, bodyLimit: 1_048_576,
@@ -43,6 +48,8 @@ export function createApp(deps: { db: Pool; redis: Redis; authStore?: AuthStore;
   });
 
   app.setErrorHandler<FastifyError>((error, request, reply) => {
+    if (error instanceof ProviderInputError) return reply.code(error.reason === 'not_found' ? 404 : error.reason === 'invalid' ? 400 : 409)
+      .send({ message: error.reason === 'invalid' ? 'Dados da conexão inválidos.' : 'Provedor ou conexão indisponível.' });
     if (error instanceof WorkspaceAccessError) return reply.code(error.reason === 'not_found' ? 404 : 403)
       .send({ message: error.reason === 'not_found' ? 'Workspace indisponível.' : 'Permissão insuficiente.' });
     if (error.validation) return reply.code(400).send({ message: 'Dados inválidos.' });
@@ -60,6 +67,7 @@ export function createApp(deps: { db: Pool; redis: Redis; authStore?: AuthStore;
   app.after(() => {
     registerAuthRoutes(app, authStore, auth);
     registerWorkspaceRoutes(app, new WorkspaceService(workspaceStore));
+    registerProviderRoutes(app, new ProviderService(deps.providerRegistry ?? new ProviderRegistry(), new PgProviderStore(deps.db, deps.credentialCipher)));
   });
 
   app.get('/health/live', { config: { rateLimit: false } }, async () => ({ status: 'ok' }));
