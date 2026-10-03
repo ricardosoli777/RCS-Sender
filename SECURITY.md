@@ -2,7 +2,7 @@
 
 Não registre credenciais, tokens, senhas ou chaves no repositório. Use `.env` apenas no ambiente local; o arquivo está no `.gitignore`. Credenciais de provedores não deverão ficar em variáveis do frontend nem em texto claro no banco.
 
-Cadastro, login, sessões e autorização por workspace estão implementados. A plataforma permanece em desenvolvimento e **não está pronta para produção**: testes com serviços reais, proteção de proxy público e as waves de segurança e implantação ainda precisam ser validados.
+Cadastro, login, sessões e autorização por workspace foram validados com PostgreSQL, Redis e Chromium na [CI de 03/10/2026](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421). A plataforma permanece em desenvolvimento e **não está pronta para produção**: proteção de proxy público e as waves de segurança e implantação ainda precisam ser validadas.
 
 O pacote `@rcs/security` cifra dados com AES-256-GCM e suporta versões de chave para rotação futura. A aplicação ainda não armazena credenciais de provedores. A chave mestra deverá ser configurada fora do Git quando o armazenamento for implementado.
 

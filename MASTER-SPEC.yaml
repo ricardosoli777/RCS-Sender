@@ -2485,7 +2485,8 @@ spec:
       execution_notes:
         - "Git, Node.js 24 and pnpm available in the current workspace."
         - "No local .env, PostgreSQL or Redis service configuration found."
-        - "Local and remote history confirmed on 2026-10-03; CI for d3d6963 failed at root E2E typecheck before service tests."
+        - "Local and remote history confirmed; CI for 982fe2f passed with temporary PostgreSQL, Redis and Chromium on 2026-10-03."
+        - "Local .env and real-service startup remain unvalidated; CI service validation does not close the local environment gate."
 
       tasks:
         - "validate Git"
@@ -2511,11 +2512,11 @@ spec:
 
       name: "Engineering Foundation"
 
-      execution_status: "implemented_pending_service_validation"
+      execution_status: "completed"
       execution_notes:
         - "Monorepo code, build, types and lint validated locally."
-        - "CI for d3d6963 passed build and package types, then failed at E2E types; root Node.js types corrected locally on 2026-10-03."
-        - "Corrected-tree CI and real-service validation remain pending."
+        - "CI for 982fe2f passed install, build, package and E2E types, lint, real-service tests and Chromium on 2026-10-03."
+        - "Evidence: https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421"
 
       deliverables:
         - "monorepo"
@@ -2534,7 +2535,11 @@ spec:
 
       name: "Authentication & Workspace Foundation"
 
-      execution_status: "implemented_pending_integration_validation"
+      execution_status: "completed"
+      execution_notes:
+        - "29 tests including PostgreSQL migrations, Redis readiness and workspace integration passed in CI on 2026-10-03."
+        - "Chromium validated registration, login, logout, cross-workspace isolation and workspace switching."
+        - "Evidence for commit 982fe2f: https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421"
       implemented:
         - "registration creates user, default workspace, owner membership and session atomically"
         - "login, session validation, expiration and logout revocation"
@@ -2545,10 +2550,8 @@ spec:
         - "unit security and tenant isolation tests"
         - "real-service integration and Playwright E2E suites prepared"
         - "root Node.js type dependency and explicit E2E types corrected after inspecting failed CI"
-      remaining:
-        - "execute PostgreSQL and Redis integration validation"
-        - "execute complete Chromium E2E flow"
-        - "confirm CI result for the current repository tree"
+        - "PostgreSQL workspace audit UUID conversion and supported E2E logging corrected and validated"
+      remaining: []
 
       deliverables:
         - "users"

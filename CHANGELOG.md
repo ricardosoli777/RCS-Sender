@@ -13,7 +13,7 @@
 - Auditoria operacional isolada por workspace; histórico inicial preservado em log de identidade separado.
 - CSRF por origem e cabeçalho, payloads estritos, limite de login/cadastro e falha fechada de Redis.
 - Proxy web com rotas aprovadas e corpo limitado; carregamento do `.env` no servidor web.
-- Testes de integração e E2E preparados; execução com serviços reais ainda pendente.
+- Waves 1 e 2 validadas na CI em 03/10/2026: 29 testes com PostgreSQL/Redis e fluxo E2E no Chromium passaram.
 - Documentação de autenticação, workspaces, configuração e validação atualizada.
 
 ## 0.1.0 — Fundação inicial

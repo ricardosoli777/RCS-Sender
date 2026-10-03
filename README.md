@@ -48,7 +48,7 @@ Abra `http://localhost:3000` e clique em **Criar uma conta**. O cadastro cria au
 
 Para validar código e testes, rode `pnpm build`, `pnpm typecheck`, `pnpm lint` e `pnpm test`. O workflow de CI executa esses comandos no GitHub a cada push ou pull request.
 
-**Estado da Wave 2:** fundação de autenticação e workspaces implementada. O fechamento depende de executar os testes com PostgreSQL/Redis e o fluxo completo no navegador. Os módulos de campanhas, mensagens e provedores continuam em construção. Consulte [validação](docs/validation.md) para os resultados e limites da verificação local.
+**Estado da Wave 2:** fundação de autenticação e workspaces validada e encerrada. A [CI de 03/10/2026](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421) passou por testes com PostgreSQL/Redis e pelo fluxo completo no Chromium. A Wave 3 de segurança continua em andamento. Os módulos de campanhas, mensagens e provedores continuam em construção. Consulte [validação](docs/validation.md) para os resultados e limites da verificação local.
 
 ## Configuração e instalação
 

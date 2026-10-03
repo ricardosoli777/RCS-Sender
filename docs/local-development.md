@@ -37,4 +37,4 @@ Abra `http://localhost:3000`, clique em **Criar uma conta** e informe seu nome, 
 
 Consulte `/health/ready` na API para confirmar a ligação com os dois serviços. Resposta 503 indica indisponibilidade de pelo menos um deles. Se a inicialização reclamar de configuração ausente, confira `.env` e seus caminhos; não cole a senha em issues ou logs. Use a mesma origem em `APP_URL` e no navegador: `localhost` e `127.0.0.1` são origens diferentes.
 
-A CI configura PostgreSQL e Redis temporários e está preparada para executar migrações, autenticação, isolamento e testes completos no Chromium. A execução dessa CI ainda precisa ser confirmada para esta implementação. Para rodar os testes com serviços locais de teste, siga [validação](validation.md), que mostra como carregar as variáveis do `.env` no PowerShell.
+A [CI de 03/10/2026](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421) validou migrações, autenticação, isolamento e testes completos no Chromium com PostgreSQL e Redis temporários. Para rodar os testes com serviços locais de teste, siga [validação](validation.md), que mostra como carregar as variáveis do `.env` no PowerShell.
