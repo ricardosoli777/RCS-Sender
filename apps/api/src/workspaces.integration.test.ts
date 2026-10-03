@@ -35,6 +35,10 @@ describe('authentication and workspace isolation with PostgreSQL and Redis', () 
       expect(workspaceA.id).not.toBe(workspaceB.id);
       const contextA = (await workspaces.resolveContext(alice.id, workspaceA.id))!;
       const contextB = (await workspaces.resolveContext(bob.id, workspaceB.id))!;
+      expect(await workspaces.listAudit(workspaceA.id)).toEqual([
+        expect.objectContaining({ workspace_id: workspaceA.id, actor_user_id: alice.id,
+          event: 'workspace.created', entity_type: 'workspace', entity_id: workspaceA.id })
+      ]);
       expect(await workspaces.resolveContext(bob.id, workspaceA.id)).toBeNull();
       expect((await workspaces.listAudit(workspaceA.id)).every((event) => event.workspace_id === workspaceA.id)).toBe(true);
       const foreign = await app.inject({ url: `/workspaces/${workspaceA.id}/audit`, headers: { cookie: `rcs_session=${bobToken}` } });

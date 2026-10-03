@@ -26,7 +26,7 @@ export class PgAuthStore implements AuthStore {
       await client.query("INSERT INTO workspace_members (workspace_id, user_id, role) VALUES ($1, $2, 'owner')", [workspaceId, user.id]);
       await client.query('INSERT INTO sessions (user_id, token_hash, expires_at) VALUES ($1, $2, $3)', [user.id, tokenHash, expiresAt]);
       await client.query(`INSERT INTO audit_logs (workspace_id, actor_user_id, event, entity_type, entity_id)
-        VALUES ($1, $2, 'workspace.created', 'workspace', $1::text)`, [workspaceId, user.id]);
+        VALUES ($1::uuid, $2, 'workspace.created', 'workspace', $1::uuid::text)`, [workspaceId, user.id]);
       await client.query("INSERT INTO auth_audit_logs (actor_user_id, event_type) VALUES ($1, 'auth.registered')", [user.id]);
       return user;
     });
