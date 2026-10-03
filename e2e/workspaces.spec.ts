@@ -5,7 +5,11 @@ test('register, workspace isolation, workspace switch, logout and login', async 
   const suffix = randomUUID();
   const email = `alice-${suffix}@example.test`;
   const password = `test-only-${suffix}`;
-  await page.goto('/');
+  const initial = await page.goto('/');
+  expect(initial!.headers()).toMatchObject({ 'x-content-type-options': 'nosniff',
+    'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer' });
+  expect(initial!.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
+  expect(initial!.headers()['x-powered-by']).toBeUndefined();
   await expect(page).toHaveURL(/\/login$/);
   await page.getByRole('link', { name: 'Criar uma conta' }).click();
   await page.getByLabel('Seu nome').fill('Alice');

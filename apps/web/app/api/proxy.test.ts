@@ -2,10 +2,33 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET, POST, PATCH } from './[...path]/route';
 
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const uuid = 'a3a89226-3aef-4fc8-b5e6-12fae6ed1149';
 
 describe('same-origin API proxy', () => {
+  it.each(['timeout', 'disconnect'])('cancels a stalled upload on %s before contacting the API', async (reason) => {
+    vi.stubEnv('API_URL', 'http://127.0.0.1:3001');
+    const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+    const deadline = new AbortController();
+    vi.spyOn(AbortSignal, 'timeout').mockReturnValue(deadline.signal);
+    const client = new AbortController();
+    const cancel = vi.fn();
+    const stream = new ReadableStream({ cancel });
+    const requestOptions = {
+      method: 'POST', body: stream, signal: client.signal, duplex: 'half' as const
+    };
+    const request = new NextRequest('http://localhost:3000/api/auth/login', requestOptions);
+    const pending = POST(request, { params: Promise.resolve({ path: ['auth', 'login'] }) });
+    await Promise.resolve();
+    (reason === 'timeout' ? deadline : client).abort();
+    const response = await pending;
+    expect(response.status).toBe(503);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(stream.locked).toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('forwards only approved routes and security headers, preserving the HttpOnly cookie', async () => {
     vi.stubEnv('API_URL', 'http://127.0.0.1:3001');
     const fetch = vi.fn(async () => new Response('{"user":{}}', { headers: {

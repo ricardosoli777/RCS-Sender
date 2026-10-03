@@ -1996,6 +1996,9 @@ spec:
         origin_must_match_APP_URL: true
         mutation_custom_header: "X-RCS-Request: 1"
         proxy_body_limit_bytes: 8192
+        proxy_timeout_ms: 10000
+        proxy_timeout_includes_upload: true
+        proxy_client_disconnect_cancels_request: true
         client_forwarded_ip_headers_trusted: false
         production_trusted_proxy_validation_pending: true
 
@@ -2028,6 +2031,20 @@ spec:
       LGPD: true
       data_minimization: true
       sensitive_log_redaction: true
+      foundation_log_redaction:
+        root_secrets: true
+        nested_secret_fields: true
+        request_session_headers: true
+        response_session_headers: true
+
+    foundation_web_headers:
+      content_type_options: "nosniff"
+      frame_options: "DENY"
+      referrer_policy: "no-referrer"
+      permissions_policy: "camera=(), microphone=(), geolocation=()"
+      content_security_policy: "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+      script_policy_with_nonces_pending: true
+      powered_by_header: false
 
 
   # ============================================================================
@@ -2575,6 +2592,7 @@ spec:
       execution_status: "in_progress"
       execution_notes:
         - "Initial headers, encryption, rate limiting, CSRF controls, workspace authorization and audit implemented."
+        - "Web security headers, upload timeout and disconnect cancellation, and root/response-cookie log redaction implemented."
         - "Production proxy limits and remaining security acceptance require validation."
 
       deliverables:

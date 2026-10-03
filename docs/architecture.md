@@ -12,4 +12,6 @@ Os módulos de autenticação e workspaces estão em `apps/api/src/modules`, com
 
 O frontend usa um proxy no próprio servidor Next.js para rotas aprovadas da API. Credenciais e `API_URL` ficam fora do código enviado ao navegador. O proxy preserva cookie HttpOnly e origem da requisição, limita corpos a 8 KiB e não confia em cabeçalhos de IP enviados pelo cliente.
 
+O prazo de dez segundos do proxy inclui leitura do corpo e comunicação com a API. Uploads interrompidos são cancelados antes de encaminhar um corpo incompleto. Cabeçalhos de segurança são aplicados pelo Next.js às páginas e rotas web; a CSP atual cobre base URI, formulários, frames e objetos, com política de scripts ainda pendente.
+
 O pacote `@rcs/security` fornece criptografia autenticada AES-256-GCM para credenciais futuras. O texto cifrado inclui versão da chave, nonce e tag; o contexto da conexão é autenticado junto com o conteúdo. A persistência e a rotação operacional das chaves ainda não estão integradas à API.
