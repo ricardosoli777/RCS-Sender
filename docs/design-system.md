@@ -10,4 +10,6 @@ Configurações permite a proprietários listar e adicionar contas existentes, a
 
 Diálogos usam o elemento nativo `dialog`: foco inicial em Cancelar, contenção de foco pelo navegador, Escape para fechar e confirmação explícita. Escape fica bloqueado durante a gravação. Essa abordagem preserva a CSP estrita sem estilos inline. Navegação tem indicação da página atual e link para pular ao conteúdo; controles têm altura mínima de 44 pixels e foco visível.
 
-O E2E cobre alterações de equipe, negação para leitores, troca de workspace na mesma página, proteção do último proprietário e ausência de transbordamento da página em 320/375 pixels. A CI captura telas do painel e Configurações para inspeção visual. Isso não constitui uma auditoria completa WCAG.
+No celular, a tabela apresenta cada membro com seu perfil e ações visíveis. O carregamento antecipado dos links de navegação está desativado para evitar consultas autenticadas às páginas antes da abertura.
+
+O E2E cobre alterações de equipe, negação para leitores, troca de workspace na mesma página, proteção do último proprietário e ausência de transbordamento da página em 320/375 pixels. A [CI de validação](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37130522235) passou em 03/10/2026; as capturas do painel e Configurações foram inspecionadas. Isso não constitui uma auditoria completa WCAG.

@@ -1,5 +1,7 @@
 # Validação da fundação 5.3.0
 
+A Wave 4 foi concluída na [CI do commit `91c448d`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37130522235), em 03/10/2026. Build, TypeScript, lint, 37 testes com PostgreSQL/Redis e dois cenários E2E passaram. O fluxo de navegador agora inclui adicionar uma conta existente à equipe, alterar seu perfil, remover o vínculo, bloquear a remoção do último proprietário, negar gestão a leitores e trocar de workspace preservando Configurações. Verificações de transbordamento passaram em 320/375 pixels. As capturas do painel e de Configurações foram inspecionadas no desktop e no celular; a tabela se adapta para apresentar todas as ações no celular. A CI também confirmou que a CSP estrita continua bloqueando scripts inseridos no HTML. Não foi realizada auditoria completa WCAG nem validação pública na VPS.
+
 A Wave 2 foi validada na [CI do commit `982fe2f`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421), concluída com sucesso em 03/10/2026. Instalação com lockfile fixo, build, TypeScript dos pacotes e E2E, lint, 29 testes (incluindo os três com PostgreSQL/Redis) e o fluxo completo no Chromium passaram. As Waves 1 e 2 estão encerradas; a Wave 3 de segurança continua em andamento e a plataforma ainda não está pronta para produção.
 
 Não foram encontrados `.env` nem executáveis de PostgreSQL ou Redis no PATH local. A validação integrada ocorreu em serviços temporários da CI; a instalação local com serviços reais continua pendente na Wave 0.

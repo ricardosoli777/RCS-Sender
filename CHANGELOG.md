@@ -4,6 +4,7 @@
 
 - Wave 4: tokens Purple Signal, fontes locais, AppShell responsivo e navegação que preserva o workspace.
 - Configurações com gestão real de membros, alteração de perfis e confirmação de remoção; autorização mantida na API.
+- Wave 4 concluída na CI de 03/10/2026: 37 testes e dois E2E passaram; capturas desktop/celular inspecionadas, incluindo foco do diálogo e ações móveis.
 - Wave 3: CSP com nonces por requisição e limites Redis por IP autenticado na cadeia proxy público → web → API, com segredos distintos.
 - CI da Wave 3 aprovada em 03/10/2026: 37 testes e dois cenários E2E, incluindo injeção no HTML e limites independentes com Redis real.
 - Wave 3: cabeçalhos de segurança web, prazo para uploads no proxy, cancelamento por desconexão e ocultação de segredos/cookies nos logs.

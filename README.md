@@ -50,6 +50,8 @@ Para validar código e testes, rode `pnpm build`, `pnpm typecheck`, `pnpm lint` 
 
 **Estado da Wave 2:** fundação de autenticação e workspaces validada e encerrada. A [CI de 03/10/2026](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37126723421) passou por testes com PostgreSQL/Redis e pelo fluxo completo no Chromium. A Wave 3 de segurança continua em andamento. Os módulos de campanhas, mensagens e provedores continuam em construção. Consulte [validação](docs/validation.md) para os resultados e limites da verificação local.
 
+**Wave 4 concluída:** interface Purple Signal com painel, navegação responsiva e Configurações para gestão de membros. A [CI aprovada](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37130522235) verificou inclusões, alterações de perfil, remoções, proteção do último proprietário e troca de workspace sem mudar de página. As capturas desktop/celular foram inspecionadas. Veja [design system](docs/design-system.md). A Wave 3 aguarda somente validação de proxy, HTTPS e firewall na VPS; a próxima etapa de produto é o Provider Core.
+
 ## Configuração e instalação
 
 Veja [desenvolvimento local](docs/local-development.md) e [configuração](docs/configuration.md). A instalação na VPS, domínio, HTTPS, processos, backup e atualizações serão documentados e validados nas waves de implantação. O código não contém domínio ou URL pública de webhook fixos.
