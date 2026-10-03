@@ -107,7 +107,7 @@ caption { text-align: left; color: #a1a1aa; padding-bottom: 12px; font-size: 12p
 th { color: #a1a1aa; font-size: 11px; font-weight: 500; padding: 12px; background: #18181f; }
 td { padding: 16px 12px; border-bottom: 1px solid #27272f; }
 td strong { display: block; font-weight: 600; }
-td small { display: block; color: #a1a1aa; margin-top: 5px; }
+td small { display: block; color: #a1a1aa; margin-top: 5px; overflow-wrap: anywhere; }
 .memberActions { display: flex; gap: 8px; }
 .memberActions button { font-size: 12px; padding: 10px 12px; }
 .dialog { width: min(480px,calc(100% - 32px)); margin: auto; padding: 28px; background: #18181f; color: #fafafa; border: 1px solid #52525b; border-radius: 14px; }
@@ -119,3 +119,11 @@ td small { display: block; color: #a1a1aa; margin-top: 5px; }
 @media(max-width:800px) { .appShell { display: block; } .sidebar { position: static; height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid #27272f; } .sidebar .brand { margin: 0 0 16px; } .navCaption,.sidebarNote { display: none; } .sidebar nav { display: flex; overflow-x: auto; gap: 4px; padding: 4px; } .sidebar nav a { flex-shrink: 0; padding: 10px; font-size: 12px; } .navDot { display: none; } .appHeader { min-height: 76px; padding: 16px 20px; } .appContent { padding: 28px 20px; } .profile { display: none; } .appHeader>div:last-child { margin-left: auto; } .summaryGrid { grid-template-columns: 1fr; } .summaryGrid .card { padding: 20px; } .summaryGrid p { margin-top: 10px; } .welcomeCard { padding: 24px; grid-template-columns: 1fr; } .signalArt { display: none; } .appFooter { padding: 20px; flex-wrap: wrap; } }
 @media(max-width:480px) { .moduleGrid { grid-template-columns: 1fr; } .pageHeading { align-items: start; flex-direction: column; gap: 14px; } .workspaceSelector { flex-direction: column; align-items: start; gap: 4px; max-width: calc(100% - 90px); } .workspaceSelector select { max-width: 100%; } .workspaceName { max-width: 180px; } .loginCard { padding: 24px; } .memberForm { flex-direction: column; align-items: stretch; } .memberForm label { min-width: 0; } .settingsGrid .card { padding: 20px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior: auto !important; } }
+@media(max-width:480px) {
+  .tableScroll { overflow: visible; }
+  table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  table tbody, table tr, table td { display: block; }
+  table tr { padding: 12px 0; border-bottom: 1px solid #27272f; }
+  table td { border: 0; padding: 6px 0; }
+  table td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; color: #a1a1aa; margin-bottom: 6px; }
+}

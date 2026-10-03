@@ -91,8 +91,10 @@ test('register, workspace isolation, workspace switch, logout and login', async 
     await expect(page.getByRole('dialog')).toContainText('O workspace precisa manter um proprietário ativo.');
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).not.toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: 'test-results/settings-desktop.png', fullPage: true });
     await page.setViewportSize({ width: 375, height: 812 });
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: 'test-results/settings-mobile.png', fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.getByRole('button', { name: 'Remover Bob', exact: true }).click();
@@ -104,6 +106,7 @@ test('register, workspace isolation, workspace switch, logout and login', async 
     });
     expect(invited.status()).toBe(204);
     await page.reload();
+    await expect(page.getByRole('heading', { name: 'Configurações', exact: true })).toBeVisible();
     await page.getByLabel('Workspace', { exact: true }).selectOption(workspaceB);
     await expect(page).toHaveURL(new RegExp(`workspace=${workspaceB}`));
     await expect(page).toHaveURL(/\/settings\?workspace=/);
