@@ -9,7 +9,7 @@ export default defineConfig({
   use: { baseURL: appUrl, browserName: 'chromium', trace: 'off', screenshot: 'off', video: 'off' },
   webServer: [
     { command: 'pnpm --filter @rcs/api exec node dist/main.js', url: `${apiUrl}/health/ready`, reuseExistingServer: false,
-      env: { NODE_ENV: 'test', APP_URL: appUrl, API_URL: apiUrl, API_PORT: '3101', LOG_LEVEL: 'silent' } },
+      env: { NODE_ENV: 'test', APP_URL: appUrl, API_URL: apiUrl, API_PORT: '3101', LOG_LEVEL: 'error' } },
     { command: 'pnpm --filter @rcs/web exec next start --hostname 127.0.0.1 --port 3100', url: `${appUrl}/login`, reuseExistingServer: false,
       env: { NODE_ENV: 'production', API_URL: apiUrl } }
   ]
