@@ -4,6 +4,7 @@
 
 - Wave 5: contratos canônicos, matriz de capacidades, registro com requisitos de ativação e framework de evidência de provedores.
 - Conexões isoladas por workspace, credenciais criptografadas e auditoria transacional; API sem leitura de segredos.
+- Wave 5 concluída na CI de 03/10/2026: 47 testes e dois E2E passaram, incluindo troca de ciphertext, rotação de chaves e autorização revalidada.
 - Wave 4: tokens Purple Signal, fontes locais, AppShell responsivo e navegação que preserva o workspace.
 - Configurações com gestão real de membros, alteração de perfis e confirmação de remoção; autorização mantida na API.
 - Wave 4 concluída na CI de 03/10/2026: 37 testes e dois E2E passaram; capturas desktop/celular inspecionadas, incluindo foco do diálogo e ações móveis.

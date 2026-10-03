@@ -28,3 +28,5 @@ Todas exigem `providers.manage`; mutações exigem origem válida e `X-RCS-Reque
 Copie [TEMPLATE.md](TEMPLATE.md) quando iniciar um adaptador. Consulte primeiro a documentação oficial atual do fornecedor e registre dúvidas sem transformá-las em capacidades verificadas. Nenhum documento de fornecedor foi preenchido como concluído nesta etapa. O Mock Provider é a próxima wave e terá evidência explicitamente local, separada de integrações reais.
 
 A implementação reutiliza o cipher já existente, seguindo os dados autenticados de [Node.js crypto](https://nodejs.org/docs/latest-v24.x/api/crypto.html#ciphersetaadbuffer-options) e as relações compostas documentadas em [PostgreSQL 17](https://www.postgresql.org/docs/17/ddl-constraints.html#DDL-CONSTRAINTS-FK).
+
+A [CI do código final `25f660f`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37132439608) passou em 03/10/2026 com 47 testes e dois E2E. O armazenamento integrado, a rotação de chaves, o isolamento, as respostas sem segredos e o rollback de auditoria foram verificados. A Wave 5 está concluída; integrações externas e o envio continuam pendentes nas próximas etapas.

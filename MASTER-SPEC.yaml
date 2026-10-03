@@ -2653,12 +2653,15 @@ spec:
     wave_5:
 
       name: "Provider Core"
-      execution_status: "in_progress"
+      execution_status: "completed"
       execution_notes:
         - "Canonical contracts, verified-capability checks, activation-gated registry and provider evidence template implemented."
         - "Workspace connections and context-bound encrypted credentials persist transactionally with audit and fresh authorization."
         - "Public API lists metadata and replaces credentials without exposing secrets; no external adapter is registered yet."
-        - "Local checks passed; PostgreSQL/Redis integration and browser validation in progress."
+        - "Build, type checks, lint, 47 tests including PostgreSQL/Redis and two Chromium E2E scenarios passed on 2026-10-03."
+        - "Verified API creation/replacement without secret disclosure, tenant-bound ciphertext, key rotation, stale-role rejection and audit rollback."
+        - "Application service depends on a domain persistence port; adapters remain separate from workspace storage."
+        - "Evidence for final code 25f660f: https://github.com/ricardosoli777/RCS-Sender/actions/runs/37132439608"
 
       deliverables:
         - "RcsProvider"
