@@ -11,12 +11,15 @@ const roles: Role[] = ['owner', 'admin', 'operator', 'viewer'];
 export default function Members({ workspaceId, members }: { workspaceId: string; members: Member[] }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [action, setAction] = useState<Action | null>(null);
   const [role, setRole] = useState<Role>('viewer');
-  useEffect(() => { if (action) dialog.current?.showModal(); }, [action]);
+  useEffect(() => {
+    if (action) { dialog.current?.showModal(); cancel.current?.focus(); }
+  }, [action]);
   async function mutate(path: string, method: string, body?: object) {
     setPending(true); setError(''); setSuccess('');
     try {
@@ -55,7 +58,7 @@ export default function Members({ workspaceId, members }: { workspaceId: string;
     {!action && <p role="alert" className="formError">{error}</p>}<p role="status" className="formSuccess">{success}</p>
     <div className="tableScroll"><table><caption>{members.length} {members.length === 1 ? 'membro ativo' : 'membros ativos'} neste workspace</caption><thead><tr><th scope="col">Pessoa</th><th scope="col">Perfil</th><th scope="col">Ações</th></tr></thead><tbody>{members.map((member) => <tr key={member.id}><td><strong>{member.name}</strong><small>{member.email}</small></td><td>{roleNames[member.role]}</td><td><div className="memberActions"><Button variant="secondary" disabled={pending} onClick={() => open(member, 'role')} aria-label={`Alterar perfil de ${member.name}`}>Alterar perfil</Button><Button variant="secondary" disabled={pending} onClick={() => open(member, 'remove')} aria-label={`Remover ${member.name}`}>Remover</Button></div></td></tr>)}</tbody></table></div>
     <dialog ref={dialog} className="dialog" aria-labelledby="member-dialog-title" onCancel={(event) => { if (pending) event.preventDefault(); }} onClose={() => setAction(null)}>
-      {action && <form onSubmit={confirm}><h2 id="member-dialog-title">{action.kind === 'remove' ? 'Remover membro' : 'Alterar perfil'}</h2><p>{action.kind === 'remove' ? `${action.member.name} perderá o acesso a este workspace.` : `Defina o perfil de ${action.member.name}.`} A equipe precisa manter ao menos um proprietário.</p>{action.kind === 'role' && <label>Novo perfil<select value={role} onChange={(event) => setRole(event.target.value as Role)} disabled={pending}>{roles.map((item) => <option key={item} value={item}>{roleNames[item]}</option>)}</select></label>}<p className="formError" role="alert">{error}</p><div className="dialogActions"><Button type="button" variant="secondary" autoFocus disabled={pending} onClick={() => dialog.current?.close()}>Cancelar</Button><Button type="submit" variant={action.kind === 'remove' ? 'danger' : 'primary'} disabled={pending}>{pending ? 'Salvando…' : action.kind === 'remove' ? 'Confirmar remoção' : 'Salvar perfil'}</Button></div></form>}
+      {action && <form onSubmit={confirm}><h2 id="member-dialog-title">{action.kind === 'remove' ? 'Remover membro' : 'Alterar perfil'}</h2><p>{action.kind === 'remove' ? `${action.member.name} perderá o acesso a este workspace.` : `Defina o perfil de ${action.member.name}.`} A equipe precisa manter ao menos um proprietário.</p>{action.kind === 'role' && <label>Novo perfil<select value={role} onChange={(event) => setRole(event.target.value as Role)} disabled={pending}>{roles.map((item) => <option key={item} value={item}>{roleNames[item]}</option>)}</select></label>}<p className="formError" role="alert">{error}</p><div className="dialogActions"><Button type="button" variant="secondary" ref={cancel} disabled={pending} onClick={() => dialog.current?.close()}>Cancelar</Button><Button type="submit" variant={action.kind === 'remove' ? 'danger' : 'primary'} disabled={pending}>{pending ? 'Salvando…' : action.kind === 'remove' ? 'Confirmar remoção' : 'Salvar perfil'}</Button></div></form>}
     </dialog>
   </Card>;
 }
