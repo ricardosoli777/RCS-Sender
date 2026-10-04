@@ -1,0 +1,8 @@
+import AppShell from '../app-shell';
+import { apiGet,workspaceData,WorkspaceUnavailable } from '../workspace';
+type Provider={metadata:{id:string;name:string;environments:string[];credentialSchema:{key:string;label:string;required:boolean;secret:boolean}[]};active:boolean;capabilities:Record<string,string>};
+export default async function IntegrationsPage({searchParams}:{searchParams:Promise<{workspace?:string}>}){
+  const data=await workspaceData((await searchParams).workspace);if(!data)return <WorkspaceUnavailable/>;let providers:Provider[]|null=null;
+  if(data.context.permissions.includes('providers.manage'))try{const response=await apiGet(`/workspaces/${data.selected.id}/providers/catalog`,data.apiHeaders);if(response.ok)providers=(await response.json()).providers;}catch{ /* Preserve unavailable catalog. */ }
+  return <AppShell data={data} active="/integrations"><div className="pageHeading"><div><p className="eyebrow">PROVEDORES RCS</p><h1>Integrações</h1><p>Adaptadores preparados conforme a documentação das empresas. A configuração e a ativação com sua conta serão feitas posteriormente.</p></div></div>{providers?<div className="settingsGrid">{providers.map(provider=><section className="card" key={provider.metadata.id}><h2>{provider.metadata.name}</h2><p>{provider.active?'Ativo':'Preparado · aguardando ativação'}</p><p>Texto: {provider.capabilities.text==='supported'?'implementado':'indisponível'}</p><h3>Campos de configuração</h3><ul>{provider.metadata.credentialSchema.map(field=><li key={field.key}>{field.label}{field.secret?' · segredo':''}</li>)}</ul><p>Não existe envio automático ao abrir esta página.</p></section>)}</div>:<p role="alert">Catálogo indisponível ou sem permissão.</p>}</AppShell>;
+}

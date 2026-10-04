@@ -1,0 +1,10 @@
+import Link from 'next/link';
+import AppShell,{ workspaceHref } from '../app-shell';
+import { apiGet,workspaceData,WorkspaceUnavailable } from '../workspace';
+import { Card } from '../ui';
+export default async function ConversationsPage({ searchParams }: { searchParams: Promise<{ workspace?: string; offset?: string }> }) {
+  const query = await searchParams; const data = await workspaceData(query.workspace); if (!data) return <WorkspaceUnavailable />;
+  const offset = /^(0|[1-9][0-9]{0,6})$/.test(query.offset ?? '') ? Number(query.offset) : 0; let snapshot: { total: number; conversations: { id: string; contact_name: string | null; status: string; last_message_at: string }[] } | null = null;
+  try { const response = await apiGet(`/workspaces/${data.selected.id}/conversations?offset=${offset}`,data.apiHeaders); if (response.ok) snapshot = await response.json(); } catch { /* Preserve failed reads. */ }
+  return <AppShell data={data} active="/conversations"><div className="pageHeading"><div><p className="eyebrow">INBOX LITE</p><h1>Conversas</h1><p>Respostas e ações recebidas pelos agentes do workspace.</p></div></div><Card>{snapshot ? <><div className="tableScroll"><table><caption>{snapshot.total} conversas · até 50 por página</caption><thead><tr><th>Contato</th><th>Estado</th><th>Última resposta em UTC</th></tr></thead><tbody>{snapshot.conversations.map((row) => <tr key={row.id}><td><Link href={`/conversations/${row.id}?workspace=${data.selected.id}`}>{row.contact_name ?? 'Contato sem nome'}</Link></td><td>{row.status==='open' ? 'Aberta' : 'Fechada'}</td><td>{row.last_message_at.slice(0,19).replace('T',' ')}</td></tr>)}</tbody></table></div>{!snapshot.conversations.length && <p>Nenhuma conversa nesta página.</p>}<nav aria-label="Páginas de conversas">{offset>0 && <Link href={`${workspaceHref('/conversations',data.selected.id)}&offset=${Math.max(0,offset-50)}`}>Página anterior</Link>}{offset+50<snapshot.total && <Link href={`${workspaceHref('/conversations',data.selected.id)}&offset=${offset+50}`}>Próxima página</Link>}</nav></> : <p role="alert">Não foi possível carregar as conversas.</p>}</Card></AppShell>;
+}

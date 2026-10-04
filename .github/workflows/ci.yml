@@ -48,6 +48,9 @@ jobs:
       - run: pnpm typecheck:e2e
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm test:native:domain
+      - run: pnpm release:check
+      - run: bash -n ops/backup.sh ops/restore-drill.sh ops/native-backup-drill.sh
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4

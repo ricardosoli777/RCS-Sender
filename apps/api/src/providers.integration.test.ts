@@ -24,7 +24,7 @@ describe('provider connections with PostgreSQL and Redis', () => {
     const unsupported = async () => { throw new Error('Test fixture has no network implementation'); };
     const adapter: RcsProvider = { getProviderMetadata: () => ({ id: 'test_fixture', name: 'Local fixture', environments: ['test'], credentialSchema: [{ key: 'apiKey', label: 'Test key', required: true, secret: true }] }),
       getProviderCapabilities: () => capabilityMatrix(), getProviderLimits: () => ({}), validateCredentials: (value) => Boolean(value.apiKey),
-      testConnection: unsupported, getConnectionStatus: unsupported, listAgents: unsupported, getAgent: unsupported, getAgentCapabilities: unsupported,
+      testConnection: async () => ({ status: 'connected' }), getConnectionStatus: unsupported, listAgents: unsupported, getAgent: unsupported, getAgentCapabilities: unsupported,
       send: unsupported, verifyWebhook: unsupported, parseWebhook: unsupported, normalizeEvent: () => null, getHealth: unsupported };
     const registry = new ProviderRegistry();
     registry.register(adapter, { documentPath: 'docs/providers/test-fixture.md', reviewedAt: '2026-10-03', references: ['https://example.test/local-fixture'], checks: Object.fromEntries(activationChecks.map((key) => [key, true])) as ProviderEvidence['checks'] });
@@ -53,6 +53,13 @@ describe('provider connections with PostgreSQL and Redis', () => {
       expect((await store.loadForProvider(contextA, connectionA.id))?.credentials).toEqual(credentials);
       const replaced = await app.inject({ method: 'PUT', url: `/workspaces/${workspaceA.id}/providers/${connectionA.id}/credentials`, headers: mutationHeaders, payload: { credentials } });
       expect(replaced.statusCode).toBe(204); expect(replaced.body).toBe('');
+      const testUrl = `/workspaces/${workspaceA.id}/providers/${connectionA.id}/test`;
+      expect((await app.inject({ method: 'POST', url: testUrl, headers: { cookie: mutationHeaders.cookie }, payload: {} })).statusCode).toBe(403);
+      expect((await app.inject({ method: 'POST', url: testUrl, headers: { ...mutationHeaders, cookie: `rcs_session=${tokenB}` }, payload: {} })).statusCode).toBe(404);
+      const tested = await app.inject({ method: 'POST', url: testUrl, headers: mutationHeaders, payload: {} });
+      expect(tested.statusCode).toBe(200); expect(tested.json()).toEqual({ status: 'connected' });
+      const testedSnapshot = (await store.loadForProvider(contextA, connectionA.id))!;
+      expect(testedSnapshot.connection.status).toBe('connected');
       expect(await store.loadForProvider(contextB, connectionA.id)).toBeNull();
       expect(await store.updateCredentials(contextB, connectionA.id, { apiKey: 'wrong-tenant' })).toBe(false);
       const encrypted = (await db.query('SELECT ciphertext FROM provider_credentials WHERE workspace_id = $1 AND connection_id = $2', [workspaceA.id, connectionA.id])).rows[0].ciphertext;
@@ -63,6 +70,7 @@ describe('provider connections with PostgreSQL and Redis', () => {
       const rotatedStore = new PgProviderStore(db, new CredentialCipher('new', { old: oldKey, new: newKey }));
       expect((await rotatedStore.loadForProvider(contextA, connectionA.id))?.credentials).toEqual(credentials);
       await rotatedStore.updateCredentials(contextA, connectionA.id, { apiKey: 'replacement-test-secret' });
+      expect(await store.recordConnectionTest(contextA, connectionA.id, testedSnapshot.credentialVersion, 'connected')).toBe(false);
       const newStore = new PgProviderStore(db, new CredentialCipher('new', { new: newKey }));
       expect((await newStore.loadForProvider(contextA, connectionA.id))?.credentials.apiKey).toBe('replacement-test-secret');
       const list = await app.inject({ url: `/workspaces/${workspaceA.id}/providers`, headers: { cookie: `rcs_session=${tokenA}` } });
@@ -89,8 +97,19 @@ describe('provider connections with PostgreSQL and Redis', () => {
       await workspaces.changeMember(contextA, bobMember.id, null);
       await expect(store.loadForProvider(adminContext, connectionA.id)).rejects.toMatchObject({ reason: 'not_found' });
       const audit = await workspaces.listAudit(workspaceA.id);
-      expect(audit.filter((event) => event.event.startsWith('provider.')).map((event) => event.event)).toEqual(['provider.credentials_updated', 'provider.credentials_updated', 'provider.connection_created']);
+      expect(audit.filter((event) => event.event.startsWith('provider.')).map((event) => event.event)).toEqual(['provider.credentials_updated', 'provider.connected', 'provider.credentials_updated', 'provider.connection_created']);
       expect(JSON.stringify(audit)).not.toMatch(/test-only-provider-secret|replacement-test-secret|apiKey|ciphertext/);
+      // Distinct PostgreSQL sessions race for the same global reservation.
+      const reservations = await Promise.allSettled([contextA, contextB].map((context) => store.create(context, {
+        providerId: 'test_fixture', name: 'Exclusive agent', environment: 'test', credentials, externalAgentId: 'same-signed-agent'
+      })));
+      expect(reservations.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      expect(reservations.find((result) => result.status === 'rejected')).toMatchObject({ reason: { message: 'Vínculo de agente indisponível.' } });
+      const winner = reservations.find((result) => result.status === 'fulfilled')!;
+      if (winner.status === 'fulfilled') {
+        const context = winner.value.workspace_id === workspaceA.id ? contextA : contextB;
+        await expect(store.updateCredentials(context, winner.value.id, credentials, 'different-agent')).rejects.toThrow('Vínculo de agente indisponível.');
+      }
     } finally {
       await app.close(); await db.end(); await redis.quit().catch(() => redis.disconnect());
       await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); await control.end();

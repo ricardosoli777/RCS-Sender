@@ -1,0 +1,87 @@
+# Linux host networking keeps the authenticated edge and API proxies on loopback.
+# Supply a private, chmod 600 environment file. No default passwords.
+name: rcs-sender
+services:
+  postgres:
+    image: postgres:17-bookworm
+    network_mode: host
+    environment:
+      POSTGRES_DB: rcs_sender
+      POSTGRES_USER: rcs_sender
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    command: [postgres, -c, listen_addresses=127.0.0.1]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U rcs_sender -d rcs_sender']
+      interval: 10s
+      retries: 12
+  redis:
+    image: redis:7-bookworm
+    network_mode: host
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+    command: [sh, -c, 'exec redis-server --bind 127.0.0.1 --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes: [redis-data:/data]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG']
+      interval: 10s
+      retries: 12
+  migrate:
+    image: ${RCS_IMAGE:?required}
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile
+    network_mode: host
+    env_file: ${RCS_ENV_FILE:?required}
+    command: [node, --import, tsx, packages/database/src/migrate.ts]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    restart: 'no'
+  api:
+    image: ${RCS_IMAGE:?required}
+    network_mode: host
+    env_file: ${RCS_ENV_FILE:?required}
+    command: [node, apps/api/dist/main.js]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs: [/tmp]
+  web:
+    image: ${RCS_IMAGE:?required}
+    network_mode: host
+    env_file: ${RCS_ENV_FILE:?required}
+    command: [node, apps/web/node_modules/next/dist/bin/next, start, apps/web, -H, 127.0.0.1, -p, '3000']
+    depends_on: [api]
+    restart: unless-stopped
+    stop_grace_period: 30s
+  worker:
+    image: ${RCS_IMAGE:?required}
+    network_mode: host
+    env_file: ${RCS_ENV_FILE:?required}
+    command: [node, apps/worker/dist/main.js]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs: [/tmp]
+  edge:
+    image: caddy:2
+    network_mode: host
+    environment:
+      RCS_DOMAIN: ${RCS_DOMAIN:?required}
+      RCS_EDGE_PROXY_SECRET: ${RCS_EDGE_PROXY_SECRET:?required}
+      RCS_API_PROXY_SECRET: ${RCS_API_PROXY_SECRET:?required}
+    volumes: [./Caddyfile:/etc/caddy/Caddyfile:ro, caddy-data:/data, caddy-config:/config]
+    depends_on: [web, api]
+    restart: unless-stopped
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:
+  caddy-config:

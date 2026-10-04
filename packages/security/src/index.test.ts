@@ -3,6 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { CredentialCipher } from './index.js';
 
 describe('CredentialCipher', () => {
+  it('authenticates preserved credential identity and rejects altered revision metadata',()=>{
+    const cipher=new CredentialCipher('new',{new:randomBytes(32)});const identity='a'.repeat(64);
+    const value=cipher.encryptWithIdentity('private','original-context',identity,'123.456');
+    expect(cipher.decrypt(value,'original-context')).toBe('private');
+    expect(()=>cipher.decrypt(value.replace(':123.456',':123.457'),'original-context')).toThrow();
+    expect(()=>cipher.decrypt(value,'foreign-context')).toThrow();
+  });
   const oldKey = randomBytes(32);
   const newKey = randomBytes(32);
   const oldCipher = new CredentialCipher('old', { old: oldKey });

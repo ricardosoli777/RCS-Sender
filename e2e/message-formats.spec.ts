@@ -1,0 +1,18 @@
+import {randomUUID} from 'node:crypto';
+import {test,expect} from './fixtures';
+test('message editor saves carousel categories and a journey path without changing its active snapshot',async({page})=>{
+  const suffix=randomUUID();const headers={Origin:'http://127.0.0.1:3100','X-RCS-Request':'1'};
+  expect((await page.request.post('/api/auth/register',{headers,data:{name:'Format Owner',email:`formats-${suffix}@example.test`,password:`test-only-${suffix}`,workspaceName:'Formats'}})).status()).toBe(201);
+  const workspace=(await(await page.request.get('/api/workspaces')).json()).workspaces[0].id;const base=`/api/workspaces/${workspace}`;
+  const created=await page.request.post(`${base}/journeys`,{headers,data:{name:'Offer journey'}});expect(created.status()).toBe(201);const journey=(await created.json()).journey.id;
+  const graph={nodes:[{id:'start',type:'start',position:{x:0,y:0},config:{}},{id:'choose',type:'branch',position:{x:200,y:0},config:{paths:[{key:'interested',condition:{source:'contact',field:'name',operator:'exists'}}]}},{id:'end',type:'end',position:{x:400,y:0},config:{}}],edges:[{id:'a',source:'start',target:'choose',port:'next'},{id:'b',source:'choose',target:'end',port:'interested'},{id:'c',source:'choose',target:'end',port:'default'}],viewport:{x:0,y:0,zoom:1}};
+  expect((await page.request.put(`${base}/journeys/${journey}`,{headers,data:{name:'Offer journey',expectedRevision:1,graph}})).status()).toBe(200);
+  await page.goto(`/messages?workspace=${workspace}`);await page.getByLabel('Nome da mensagem').fill('Offers');await page.getByLabel('Categoria',{exact:true}).selectOption('offer');await page.getByLabel('Formato',{exact:true}).selectOption('carousel');
+  for(let index=1;index<=2;index++){await page.getByLabel(`Título do cartão ${index}`,{exact:true}).fill(`Offer ${index}`);await page.getByLabel(`Texto do cartão ${index}`,{exact:true}).fill(`Description ${index}`);}
+  await page.getByRole('button',{name:'Criar rascunho',exact:true}).click();await expect(page).toHaveURL(/\/messages\/[a-f0-9-]+\?workspace=/);const id=new URL(page.url()).pathname.split('/').at(-1)!;
+  let snapshot=await(await page.request.get(`${base}/messages/${id}`)).json();expect(snapshot.current.archetype).toBe('offer');expect(snapshot.current.content.cards).toHaveLength(2);
+  await page.getByRole('button',{name:'Ativar versão 1',exact:true}).click();await expect(page.getByRole('button',{name:'Ativar versão 1',exact:true})).toHaveCount(0);
+  await page.getByLabel('Formato',{exact:true}).selectOption('rich_card');await page.getByLabel('Título',{exact:true}).fill('Choose');await page.getByLabel('Texto',{exact:true}).fill('Choose your path');await page.getByRole('button',{name:'Adicionar sugestão',exact:true}).click();await page.getByLabel('Rótulo da sugestão 1',{exact:true}).fill('Interested');await page.getByLabel('Tipo da sugestão 1',{exact:true}).selectOption('journey_branch');
+  await page.getByLabel('Jornada do destino',{exact:true}).selectOption(journey);await page.getByLabel('Caminho da sugestão 1',{exact:true}).selectOption(`journey_branch:${journey}:choose:interested`);await page.getByRole('button',{name:'Salvar nova versão',exact:true}).click();await expect(page.getByRole('heading',{name:'Editar versão 2',exact:true})).toBeVisible();
+  snapshot=await(await page.request.get(`${base}/messages/${id}`)).json();expect(snapshot.active.content.type).toBe('carousel');expect(snapshot.current.content.card.suggestions[0].payload).toBe(`journey_branch:${journey}:choose:interested`);
+});

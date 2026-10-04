@@ -1,0 +1,8 @@
+import { describe,expect,it } from 'vitest';
+import { evaluateCondition,scoreClassification } from './journey-conditions.js';
+describe('condition routing and score boundaries',() => {
+  it('compares numbers without converting strings or missing fields',() => { const c = { source: 'lead_score',field: 'score',operator: 'greater_or_equal',value: 25 }; expect(evaluateCondition(c,{ lead_score: { score: 25 } })).toBe(true); expect(evaluateCondition(c,{ lead_score: { score: '25' } })).toBe(false); expect(evaluateCondition(c,{})).toBe(false); });
+  it('handles existence, literal event names and nested custom fields safely',() => { expect(evaluateCondition({ source: 'message_event',field: 'message.read',operator: 'exists' },{ message_event: { 'message.read': true } })).toBe(true); expect(evaluateCondition({ source: 'custom_field',field: 'offer.intent',operator: 'equals',value: 'buy' },{ custom_field: { offer: { intent: 'buy' } } })).toBe(true); expect(evaluateCondition({ source: 'custom_field',field: '__proto__.value',operator: 'exists' },{ custom_field: {} })).toBe(false); });
+  it('routes tag collections using scalar membership without substring coercion',() => { const c = { source: 'tag',field: 'tags',operator: 'contains',value: 'hot' }; expect(evaluateCondition(c,{ tag: { tags: ['hot','vip'] } })).toBe(true); expect(evaluateCondition(c,{ tag: { tags: ['hotter'] } })).toBe(false); });
+  it('classifies all score thresholds consistently',() => { expect([0,9,10,24,25,49,50,100].map(scoreClassification)).toEqual(['cold','cold','warm','warm','hot','hot','sales_ready','sales_ready']); });
+});

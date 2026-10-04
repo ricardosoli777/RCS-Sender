@@ -11,22 +11,26 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@rcs/providers": "workspace:*",
-    "@rcs/security": "workspace:*",
-    "@rcs/database": "workspace:*",
-    "@rcs/config": "workspace:*",
-    "@rcs/observability": "workspace:*",
     "@fastify/helmet": "^13.0.0",
     "@fastify/rate-limit": "^11.2.0",
+    "@rcs/config": "workspace:*",
+    "@rcs/database": "workspace:*",
+    "@rcs/observability": "workspace:*",
+    "@rcs/providers": "workspace:*",
+    "@rcs/security": "workspace:*",
     "fastify": "^5.0.0",
+    "ioredis": "^5.0.0",
+    "libphonenumber-js": "^1.13.14",
     "pg": "^8.0.0",
-    "ioredis": "^5.0.0"
+    "sharp": "^0.35.5",
+    "@rcs/dispatch": "workspace:*"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.0.0",
+    "eslint": "^9.0.0",
     "tsx": "^4.0.0",
-    "vitest": "^3.0.0",
-    "eslint": "^9.0.0"
+    "vitest": "^3.0.0"
   }
 }

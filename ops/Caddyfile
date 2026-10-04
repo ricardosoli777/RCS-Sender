@@ -1,0 +1,18 @@
+{$RCS_DOMAIN} {
+  @callbacks path /webhooks/rcs/* /provider-media/*
+  handle @callbacks {
+    reverse_proxy 127.0.0.1:3001 {
+      header_up X-RCS-Proxy-Token {$RCS_API_PROXY_SECRET}
+      header_up X-Forwarded-For {remote_host}
+      header_up -X-RCS-Edge-Token
+    }
+  }
+  handle {
+    reverse_proxy 127.0.0.1:3000 {
+      header_up X-RCS-Edge-Token {$RCS_EDGE_PROXY_SECRET}
+      header_up X-RCS-Client-IP {remote_host}
+      header_up X-Forwarded-For {remote_host}
+      header_up -X-RCS-Proxy-Token
+    }
+  }
+}

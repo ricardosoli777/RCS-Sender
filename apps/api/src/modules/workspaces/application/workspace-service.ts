@@ -1,9 +1,8 @@
 import type { Permission, Role, WorkspaceContext, WorkspaceStore } from '../domain/contracts.js';
 export type { Role, MemberResult } from '../domain/contracts.js';
 
-export class WorkspaceAccessError extends Error {
-  constructor(readonly reason: 'not_found' | 'forbidden') { super('Workspace access denied'); }
-}
+import { WorkspaceAccessError } from '@rcs/dispatch';
+export { WorkspaceAccessError } from '@rcs/dispatch';
 
 export class WorkspaceService {
   constructor(private readonly store: WorkspaceStore) {}

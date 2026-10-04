@@ -26,6 +26,6 @@ Estado: não revisado. Preencher com evidências antes de ativar o adaptador.
 
 ## Validações de ativação
 
-Registrar evidência para revisão oficial, testes de contrato, teste de conexão, tratamento de credenciais e verificação de webhooks. Incluir datas e referências aos relatórios. Se algum teste depender de credenciais reais ainda indisponíveis, manter o adaptador inativo e registrar a pendência.
+Registrar evidência para revisão oficial, testes de contrato, teste de conexão com transporte simulado, tratamento de credenciais e verificação de webhooks. Incluir datas e referências aos relatórios. Distinguir implementação documental e validação local de validação operacional externa. Testes com credenciais reais serão realizados quando a API for usada; sua ausência não bloqueia a construção do app ou dos demais módulos. Não marcar entrega ou conexão real como comprovada por fixture.
 
 Nunca incluir credenciais, tokens, chaves privadas ou respostas brutas com segredos. Exemplos de payload devem ser sanitizados.

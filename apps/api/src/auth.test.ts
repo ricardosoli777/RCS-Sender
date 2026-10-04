@@ -67,6 +67,7 @@ function fixture(secureCookies = false, proxySecret?: string) {
 }
 
 describe('authentication and authorization', () => {
+  // Eleven real password verifications share CPU with the PostgreSQL WASM suites.
   it('keeps client rate limits separate and rejects spoofed or untrusted proxy headers', async () => {
     const proxySecret = 'b'.repeat(64);
     const f = fixture(false, proxySecret);
@@ -87,7 +88,7 @@ describe('authentication and authorization', () => {
       for (let i = 0; i < 5; i++) expect((await attempt(`2001:db8::${i + 1}`)).statusCode).toBe(401);
       expect((await attempt('2001:db8::99')).statusCode).toBe(429);
     } finally { await f.app.close(); }
-  });
+  },15000);
 
   it('issues an opaque HttpOnly cookie, persists only its hash, and revokes it on logout', async () => {
     const f = fixture();

@@ -6,8 +6,14 @@ coverage/
 playwright-report/
 test-results/
 .env
+.secrets/
 .env.*
 !.env.example
 *.log
 *.tsbuildinfo
+.planning/clean-install/
 .DS_Store
+.planning/validation-services.env
+.planning/infobip-*.go
+.planning/infobip-tree.json
+.planning/*-openapi.json

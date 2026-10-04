@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+.pnpm-store
+.git
+.env
+.env.*
+!.env.example
+.secrets
+.planning
+test-results
+playwright-report
+**/dist
+**/.next
+*.log

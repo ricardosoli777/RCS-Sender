@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('authenticated proxy rejects spoofing and applies independent Redis limits to clients', async ({ request }) => {
   const send = (ip: string, token = 'a'.repeat(64)) => request.post('/api/auth/login', {
@@ -59,7 +59,8 @@ test('register, workspace isolation, workspace switch, logout and login', async 
   const providerConnections = await page.request.get(`/api/workspaces/${workspaceA}/providers`);
   expect(providerConnections.status()).toBe(200);
   expect(await providerConnections.json()).toEqual({ connections: [] });
-  expect(await (await page.request.get(`/api/workspaces/${workspaceA}/providers/catalog`)).json()).toEqual({ providers: [] });
+  const catalog=await (await page.request.get(`/api/workspaces/${workspaceA}/providers/catalog`)).json();
+  expect(catalog.providers).toHaveLength(5);expect(catalog.providers.every((provider:{active:boolean})=>!provider.active)).toBe(true);
 
   const bobContext = await browser.newContext({ baseURL: 'http://127.0.0.1:3100',
     extraHTTPHeaders: { 'x-rcs-edge-token': 'a'.repeat(64), 'x-rcs-client-ip': '192.0.2.11' } });

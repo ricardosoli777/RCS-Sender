@@ -12,13 +12,15 @@ export type CanonicalMessage = (
   { type: 'text'; text: string } | { type: 'rich_card'; card: RichCard } |
   { type: 'media' | 'file'; media: Media; text?: string } | { type: 'carousel'; cards: readonly RichCard[] }
 ) & { suggestions?: readonly Suggestion[] };
-export type ProviderContext = Readonly<{ workspaceId: string; connectionId: string; environment: string; credentials: Credentials; signal: AbortSignal }>;
+export type ProviderContext = Readonly<{ workspaceId: string; connectionId: string; environment: string; credentials: Credentials; signal: AbortSignal;
+  resolveMedia?: (media: Media) => Promise<{ url: string; mimeType: string; byteSize: number }>;
+  beforeRequest?:()=>Promise<void>;rateLimited?:(retryAfterSeconds:number)=>Promise<void> }>;
 export type Agent = { id: string; name: string; status: 'active' | 'pending' | 'unavailable' };
 export type ConnectionStatus = 'connected' | 'disconnected' | 'unknown';
 export type Health = { status: 'healthy' | 'degraded' | 'unavailable' | 'unknown'; checkedAt: string };
-export const eventTypes = ['message.sent', 'message.delivered', 'message.read', 'message.failed', 'message.received', 'action.selected', 'contact.subscribe', 'contact.unsubscribe'] as const;
+export const eventTypes = ['message.sent', 'message.delivered', 'message.read', 'message.failed', 'message.received', 'action.selected', 'link.clicked', 'contact.subscribe', 'contact.unsubscribe'] as const;
 export type CanonicalEvent = Readonly<{ id: string; type: typeof eventTypes[number]; workspaceId: string; connectionId: string; providerId: string; occurredAt: string;
-  providerMessageId?: string; recipient: string; message?: CanonicalMessage; actionPayload?: string; error?: CanonicalError }>;
+  providerMessageId?: string; dispatchKey?:string; recipient: string; message?: CanonicalMessage; actionPayload?: string; error?: CanonicalError }>;
 export type ErrorCode = 'invalid_credentials' | 'invalid_message' | 'unsupported_capability' | 'rate_limited' | 'unavailable' | 'rejected' | 'unknown';
 export type CanonicalError = Readonly<{ code: ErrorCode; message: string; retryable: boolean; retryAfterSeconds?: number }>;
 export type SendRequest = { agentId: string; recipient: string; idempotencyKey: string; message: CanonicalMessage };
@@ -26,10 +28,18 @@ export type SendResult = { accepted: true; providerMessageId: string } | { accep
 export type WebhookRequest = { rawBody: Uint8Array; headers: Readonly<Record<string, string | undefined>> };
 
 export interface RcsProvider {
+  /** Pure local identity calculation, only when the vendor accepts caller-assigned IDs. */
+  getSendIdentity?(context:ProviderContext,request:SendRequest):string;
+  requestEligibility?(context:ProviderContext,recipient:string,requestId:string):Promise<boolean>;
+  normalizeEligibility?(context:ProviderContext,input:unknown):{requestId:string;recipient:string;eligible:boolean|null}|null;
+  verifyWebhookChallenge?(context: ProviderContext, request: WebhookRequest): Promise<string | null>;
+  getSupportedEvents?(): readonly typeof eventTypes[number][];
   getProviderMetadata(): ProviderMetadata;
   getProviderCapabilities(): CapabilityMatrix;
   getProviderLimits(): ProviderLimits;
   validateCredentials(credentials: Credentials, environment: string): boolean;
+  // Stable identity present in signed callbacks; ownership is reserved by the host application.
+  getExternalAgentId?(credentials: Credentials, environment: string): string;
   testConnection(context: ProviderContext): Promise<{ status: ConnectionStatus; error?: CanonicalError }>;
   getConnectionStatus(context: ProviderContext): Promise<ConnectionStatus>;
   listAgents(context: ProviderContext): Promise<readonly Agent[]>;

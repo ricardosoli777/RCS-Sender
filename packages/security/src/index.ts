@@ -16,6 +16,12 @@ function decodePart(value: string): Buffer {
 }
 
 export class CredentialCipher {
+  get activeKeyVersion(){return this.activeVersion;}
+  encryptWithIdentity(plaintext:string,context:string,identity:string,revision:string){
+    if(!/^[a-f0-9]{64}$/.test(identity) || !/^\d+(?:\.\d+)?$/.test(revision))throw new Error('Identidade de cifra inválida');
+    const value=this.encrypt(plaintext,JSON.stringify(['cipher-identity-v2',context,identity,revision])).split(':');
+    value[0]='v2';return [...value,identity,revision].join(':');
+  }
   constructor(private readonly activeVersion: string, private readonly keys: EncryptionKeys) {
     if (!/^[A-Za-z0-9_-]{1,32}$/.test(activeVersion)) throw new Error('Versão de chave inválida');
     if (!keys[activeVersion]) throw new Error('Chave ativa ausente');
@@ -39,7 +45,10 @@ export class CredentialCipher {
     if (!context) throw new Error('Contexto de criptografia obrigatório');
     try {
       const parts = serialized.split(':');
-      if (parts.length !== 5 || parts[0] !== FORMAT) throw new Error('Formato inválido');
+      if(parts[0]==='v2'){
+        if(parts.length!==7 || !/^[a-f0-9]{64}$/.test(parts[5]!) || !/^\d+(?:\.\d+)?$/.test(parts[6]!))throw new Error('Formato inválido');
+        context=JSON.stringify(['cipher-identity-v2',context,parts[5],parts[6]]);
+      }else if (parts.length !== 5 || parts[0] !== FORMAT) throw new Error('Formato inválido');
       const [, version, nonceText, tagText, ciphertextText] = parts;
       const key = this.keys[version!];
       if (!key) throw new Error('Chave indisponível');

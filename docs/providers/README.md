@@ -1,32 +1,31 @@
-# Provider Core
+# Provedores RCS
 
-A Wave 5 cria o pacote `@rcs/providers`, os contratos canônicos e a persistência das conexões. Nenhum adaptador externo está registrado no processo de produção. O catálogo inicial é vazio. Os testes usam fixtures locais sem rede; seus registros de evidência sintéticos não representam validação de Google, Infobip, Twilio, Sinch ou Zenvia.
+O catálogo inclui cinco adaptadores documentados, desativados por padrão: [Google RBM](google-rbm.md), [Infobip](infobip.md), [Twilio](twilio.md), [Sinch](sinch.md) e [Zenvia](zenvia.md). Credenciais e provas reais ficam para a integração posterior. O [Mock RCS](mock.md) é exclusivo de testes locais e não representa evidência externa.
 
-`RcsProvider` define metadados, capacidades, limites, agentes, envio canônico, estado da conexão, saúde e verificação/parsing/normalização de webhooks. Operações opcionais só podem ser declaradas suportadas quando implementadas. `ProviderRegistry` impede IDs duplicados e bloqueia resolução até que documentação, evidência, testes de contrato, conexão, credenciais e webhooks estejam marcados como verificados na configuração do adaptador. Esses registros são definidos no servidor, nunca recebidos do cliente. As flags não substituem revisão dos documentos e relatórios reais.
+Todos têm tradução de texto e formatos avançados documentados, com validação própria de limites, mídia e sugestões. O suporte exato fica na matriz do adaptador; formatos desconhecidos ou não implementados são bloqueados. Imagens servidas aos fornecedores são PNG/JPEG por grants temporários. PDF não é suportado.
 
-`CapabilityMatrix` distingue suporte verificado, ausência de suporte e informação desconhecida. Desconhecido bloqueia o uso. `validateMessage` verifica o formato, limites de texto em pontos de código Unicode, cards, mídia e sugestões. Cada adaptador deve traduzir seus limites documentados para essa representação e validar particularidades adicionais. Mídia usa IDs de assets; resolução de URLs e ownership fica para o Media Service. O futuro Campaign Engine deverá validar capacidades antes de enfileirar.
+Google e Infobip implementam consultas síncronas de elegibilidade; Sinch implementa consulta assíncrona com callback correlacionado à última tentativa. Twilio e Zenvia mantêm elegibilidade desconhecida, sem inventar endpoint. O resultado depende de agente, credenciais, destinatário e estado atuais.
 
-`CanonicalEvent` inclui workspace, conexão, provedor e os eventos previstos na especificação. `CanonicalError` usa códigos e mensagens fixas, sem incluir respostas brutas dos fornecedores. Apenas erros explicitamente transitórios permitem repetição. Autenticação e assinaturas de webhook continuam específicas de cada adaptador; não existe verificação genérica de assinatura.
+Callbacks são autenticados conforme cada contrato: assinatura Google/Sinch, SDK Twilio, Basic do perfil Infobip e token de assinatura de subscrição Zenvia. Normalização não transforma IDs de mensagens recebidas em IDs de mensagens enviadas. Respostas sugeridas carregam correlação da tentativa do host para o motor de jornada.
 
-## Conexões e credenciais
+## Núcleo e segurança
 
-Conexões pertencem a um workspace. Credenciais usam chave estrangeira composta `(workspace_id, connection_id)`, impedindo associar a credencial de um workspace à conexão de outro. AES-256-GCM usa como dados autenticados workspace, conexão, provedor e ambiente, impedindo reutilizar ciphertext em outro contexto. As operações revalidam o vínculo ativo e o perfil proprietário/administrador dentro da transação, usando o mesmo lock das alterações de membros. Criação e substituição de credenciais incluem auditoria atômica; falha da auditoria desfaz toda a alteração.
+`RcsProvider` define capacidades, limites, agentes, envio, saúde e callbacks. `ProviderRegistry` bloqueia resolução até evidência de ativação definida no servidor. Flags locais e testes com transporte simulado não substituem confirmação da conta externa.
 
-Uma conexão nova tem estado `unverified` e gera `provider.connection_created`. `provider.connected` fica reservado à verificação bem-sucedida que será implementada com os adaptadores. Atualizar credenciais retorna o estado para `unverified`. A API nunca oferece leitura de plaintext ou ciphertext; acesso descriptografado é um método interno para execução do provedor.
+Conexões e credenciais pertencem ao workspace, com FKs compostas e AES-256-GCM com contexto autenticado. APIs nunca retornam plaintext ou ciphertext. Criação, substituição e teste revalidam permissões atuais e gravam auditoria atômica. Agentes têm vínculo exclusivo persistente; rotação não libera a reserva.
 
-| Rota | Operação |
+| Rota de workspace | Operação |
 | --- | --- |
-| `GET /workspaces/:workspaceId/providers/catalog` | Descritores públicos dos adaptadores registrados, sem valores de credenciais. |
-| `GET /workspaces/:workspaceId/providers` | Metadados das conexões do workspace. |
-| `POST /workspaces/:workspaceId/providers` | Cria conexão não verificada com `providerId`, `name`, `environment` e `credentials`. |
-| `PUT /workspaces/:workspaceId/providers/:connectionId/credentials` | Substitui credenciais segundo o schema do adaptador. |
+| `GET /providers/catalog` | Catálogo e capacidades públicas |
+| `GET /providers` | Conexões sem segredos |
+| `POST /providers` | Criação não verificada |
+| `PUT /providers/:id/credentials` | Substituição de credenciais |
+| `POST /providers/:id/test` | Teste explícito, sem mensagem |
 
-Todas exigem `providers.manage`; mutações exigem origem válida e `X-RCS-Request: 1`. A API aceita até 64 KiB nessas mutações e mantém schemas estritos. Sem adaptador ativado, a criação retorna 409. Sem chaves de criptografia configuradas, a persistência de credenciais falha fechada. A tela de Integrações permanece em preparação até a implementação dos adaptadores e de seu fluxo de conexão.
+As rotas têm prefixo `/workspaces/:workspaceId` e exigem `providers.manage`; mutações exigem origem e `X-RCS-Request: 1`. Sem adaptador ativo, criação retorna conflito. Sem chave de cifra, persistência falha fechada.
 
-## Evidência de integração
+O dispatcher persiste a tentativa antes do HTTP e nunca repete automaticamente um POST ambíguo. Google pode reservar seu ID remoto localmente antes do envio; callbacks autenticados podem acrescentar evidência de entrega mesmo quando o resultado original ficou incerto. Não existe consulta universal de status inventada.
 
-Copie [TEMPLATE.md](TEMPLATE.md) quando iniciar um adaptador. Consulte primeiro a documentação oficial atual do fornecedor e registre dúvidas sem transformá-las em capacidades verificadas. Nenhum documento de fornecedor foi preenchido como concluído nesta etapa. O Mock Provider é a próxima wave e terá evidência explicitamente local, separada de integrações reais.
+Há orçamento compartilhado por fornecedor/conta/ambiente de uma chamada por segundo, com respeito a Retry-After. Essa é uma política conservadora do app, não uma declaração de quota oficial. Erros permanentes não entram em repetição; retomadas internas usam backoff com jitter e limite de tentativas.
 
-A implementação reutiliza o cipher já existente, seguindo os dados autenticados de [Node.js crypto](https://nodejs.org/docs/latest-v24.x/api/crypto.html#ciphersetaadbuffer-options) e as relações compostas documentadas em [PostgreSQL 17](https://www.postgresql.org/docs/17/ddl-constraints.html#DDL-CONSTRAINTS-FK).
-
-A [CI do código final `25f660f`](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37132439608) passou em 03/10/2026 com 47 testes e dois E2E. O armazenamento integrado, a rotação de chaves, o isolamento, as respostas sem segredos e o rollback de auditoria foram verificados. A Wave 5 está concluída; integrações externas e o envio continuam pendentes nas próximas etapas.
+Use [TEMPLATE.md](TEMPLATE.md) para novas integrações. Consulte [validação](../validation.md) para os resultados locais e mantenha documentação, teste de contrato e prova real como evidências separadas.

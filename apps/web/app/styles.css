@@ -127,3 +127,43 @@ td small { display: block; color: #a1a1aa; margin-top: 5px; overflow-wrap: anywh
   table td { border: 0; padding: 6px 0; }
   table td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; color: #a1a1aa; margin-bottom: 6px; }
 }
+/* Contacts reuse the existing Purple Signal forms and responsive tables. */
+.contactForm { display: grid; gap: 1rem; }
+.contactForm label { display: grid; gap: 8px; font-size: 13px; min-width: 0; }
+.contactForm textarea { width: 100%; max-width: 100%; box-sizing: border-box; color: #fafafa; background: #09090b; border: 1px solid #52525b; border-radius: 8px; padding: .75rem; font: inherit; resize: vertical; }
+.contactsFeedback { grid-column: 1 / -1; }
+.audienceRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-block: 1rem; }
+.messageFilters { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.messageFilters a { padding: 8px 12px; border: 1px solid #3f3f49; border-radius: 20px; font-size: 13px; text-decoration: none; }
+.messageFilters a[aria-current] { background: #251538; border-color: #7e22ce; color: #d8b4fe; }
+.messageActions { flex-wrap: wrap; margin-block: 16px; }
+.messageEditorGrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 28px; }
+.messagePreview { max-width: 360px; margin: 20px auto; border: 1px solid #3f3f49; border-radius: 24px; padding: 20px 12px; background: #09090b; overflow-wrap: anywhere; }
+.messageBubble { border: 1px solid #583176; border-radius: 16px; padding: 16px; background: #251538; }
+.messageBubble p { white-space: pre-wrap; color: #e4e4e7; }
+.messageImage { display: block; width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px; margin-bottom: 16px; }
+.messageSuggestions { display: grid; gap: 8px; list-style: none; padding: 0; }
+.messageSuggestions li { border: 1px solid #583176; border-radius: 10px; padding: 10px; font-size: 13px; }
+.messageSuggestions small { display: block; color: #a1a1aa; margin-top: 4px; }
+.messageFields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 14px; }
+.messageFields legend { font-size: 14px; font-weight: 600; padding: 16px 0; }
+.messageFields small { color: #a1a1aa; overflow-wrap: anywhere; }
+.messageSuggestionEditor { border: 1px solid #3f3f49; border-radius: 10px; padding: 14px; min-width: 0; display: grid; gap: 12px; }
+.messageSuggestionEditor legend { padding: 0 6px; }
+.mediaChoices { display: grid; gap: 8px; }
+.mediaChoices button { white-space: normal; overflow-wrap: anywhere; }
+.mediaChoices button[aria-pressed="true"] { border-color: #c084fc; background: #251538; }
+.messageProviderLabel { display: grid; gap: 8px; font-size: 13px; }
+.campaignPicker { display: grid; gap: 8px; min-width: 0; }
+.campaignPicker small { color: #a1a1aa; }
+.campaignTotals { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.campaignTotals dt { color: #a1a1aa; font-size: 12px; }
+.campaignTotals dd { margin: 8px 0; font-size: 24px; }
+td a,td small { overflow-wrap: anywhere; }
+@media(max-width:480px) { .campaignTotals { grid-template-columns: 1fr; } }
+.pageHeading h1 { overflow-wrap: anywhere; }
+@media(max-width:800px) { .messageEditorGrid { grid-template-columns: 1fr; } }
+/* Journey flow editor */
+.journeyVersionBar,.journeyToolbar,.journeyPalette,.journeyTools{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem;margin-bottom:1rem}.journeyVersionBar a{padding:.45rem .7rem;border-radius:.5rem;background:#efe8f7}.journeyToolbar label{min-width:220px;flex:1}.journeyBuilder{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:1rem;margin-bottom:2rem}.journeyFlow{min-width:0}.journeyCanvasWrap{position:relative;border:1px solid #ddd2e9;border-radius:1rem;overflow:hidden;background:#fbf9ff}.journeyTools{padding:.7rem;margin:0;border-bottom:1px solid #e7ddee}.journeyCanvas{display:block;width:100%;height:540px;touch-action:none;user-select:none}.journeyCanvas g[role=button]{cursor:grab}.journeyCanvas g[role=button]:focus{outline:none}.journeyCanvas g[role=button]:focus rect{stroke:#3b146b;stroke-width:4}.journeyMinimap{position:absolute;bottom:12px;right:12px;width:140px;height:90px;background:#fff;border:1px solid #d7cbe5;border-radius:.5rem;pointer-events:none}.journeyInspector{border:1px solid #e2d8eb;border-radius:1rem;background:#fff;padding:1rem;max-height:730px;overflow:auto}.journeyInspector fieldset{border:0;margin:0;padding:0}.journeyInspector fieldset fieldset{border:1px solid #e2d8eb;margin:1rem 0;padding:.6rem}.journeyInspector label{display:block;margin:.8rem 0}.journeyInspector h3{margin-top:0}.journeyPalette button{font-size:.85rem;padding:.45rem .65rem}.checkboxLabel{display:flex!important;align-items:center;gap:.5rem}.checkboxLabel input{width:auto}.validationIssues button{background:transparent;color:#682c91;text-align:left;padding:.2rem}.journeyFlow>p{font-size:.85rem;color:#776783}@media(max-width:1050px){.journeyBuilder{grid-template-columns:1fr}.journeyInspector{max-height:none}.journeyCanvas{height:420px}}
+/* Journey results and inbox */
+.journeyFunnel>div{display:flex;align-items:center;gap:1rem;margin:1rem 0}.journeyFunnel>div>span{width:120px}.journeyFunnelTrack{flex:1;background:#f1ebf8;height:20px;border-radius:6px;overflow:hidden}.journeyFunnelTrack>div{background:#8d4dd4;height:100%;min-width:2px}.inboxMessage{padding:1rem;margin:1rem 0;border:1px solid #e7dcef;border-radius:.8rem;background:#fcf9ff}.inboxMessage p{white-space:pre-wrap;overflow-wrap:anywhere}.inboxMessage small{color:#786984}

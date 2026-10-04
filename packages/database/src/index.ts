@@ -1,5 +1,8 @@
 import { readFile, readdir } from 'node:fs/promises';
 import type { Pool } from 'pg';
+export { Pool as DatabasePool } from 'pg';
+export { SimulationOutbox,processSimulationBatch,type SimulationJob } from './campaign-simulation.js';
+export {retryDelay} from './retry-delay.js';
 
 const MIGRATIONS_URL = new URL('../migrations/', import.meta.url);
 

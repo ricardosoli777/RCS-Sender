@@ -1,14 +1,14 @@
 export type Role = 'owner' | 'admin' | 'operator' | 'viewer';
 export type Permission = 'workspace.manage' | 'members.manage' | 'providers.manage' | 'contacts.manage'
   | 'messages.manage' | 'campaigns.manage' | 'campaigns.send' | 'analytics.view' | 'audit.view'
-  | 'contacts.view' | 'messages.view' | 'campaigns.view';
+  | 'contacts.view' | 'messages.view' | 'campaigns.view' | 'journeys.view' | 'journeys.manage' | 'journeys.publish' | 'conversations.view' | 'conversations.manage';
 
 export const permissions: Readonly<Record<Role, readonly Permission[]>> = {
-  owner: ['workspace.manage', 'members.manage', 'providers.manage', 'contacts.manage', 'messages.manage',
-    'campaigns.manage', 'campaigns.send', 'analytics.view', 'audit.view'],
-  admin: ['providers.manage', 'contacts.manage', 'messages.manage', 'campaigns.manage', 'campaigns.send', 'analytics.view'],
-  operator: ['contacts.manage', 'messages.manage', 'campaigns.manage', 'campaigns.send', 'analytics.view'],
-  viewer: ['contacts.view', 'messages.view', 'campaigns.view', 'analytics.view']
+  owner: ['workspace.manage', 'members.manage', 'providers.manage', 'contacts.manage', 'contacts.view', 'messages.manage', 'messages.view',
+    'campaigns.manage', 'campaigns.view', 'campaigns.send', 'journeys.view', 'journeys.manage', 'journeys.publish', 'conversations.view', 'conversations.manage', 'analytics.view', 'audit.view'],
+  admin: ['providers.manage', 'contacts.manage', 'contacts.view', 'messages.manage', 'messages.view', 'campaigns.manage', 'campaigns.view', 'campaigns.send', 'journeys.view', 'journeys.manage', 'journeys.publish', 'conversations.view', 'conversations.manage', 'analytics.view'],
+  operator: ['contacts.manage', 'contacts.view', 'messages.manage', 'messages.view', 'campaigns.manage', 'campaigns.view', 'campaigns.send', 'journeys.view', 'journeys.manage', 'journeys.publish', 'conversations.view', 'conversations.manage', 'analytics.view'],
+  viewer: ['contacts.view', 'messages.view', 'campaigns.view', 'journeys.view', 'conversations.view', 'analytics.view']
 };
 
 export type Workspace = { id: string; name: string; slug: string; status: string; role: Role };

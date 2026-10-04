@@ -12,9 +12,13 @@
   },
   "dependencies": {
     "@rcs/config": "workspace:*",
+    "@rcs/database": "workspace:*",
     "@rcs/observability": "workspace:*",
     "bullmq": "^5.0.0",
-    "ioredis": "^5.0.0"
+    "ioredis": "^5.0.0",
+    "@rcs/dispatch": "workspace:*",
+    "@rcs/providers": "workspace:*",
+    "@rcs/security": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

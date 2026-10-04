@@ -11,7 +11,9 @@
     "typecheck:e2e": "node node_modules/typescript/bin/tsc -p tsconfig.e2e.json",
     "test": "pnpm -r test",
     "test:e2e": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test",
-    "lint": "pnpm -r lint"
+    "test:native:domain": "node --env-file-if-exists=.env ops/native-domain-tests.mjs",
+    "lint": "pnpm -r lint",
+    "release:check": "node ops/release-check.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",

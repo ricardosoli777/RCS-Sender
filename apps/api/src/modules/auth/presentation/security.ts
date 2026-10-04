@@ -5,7 +5,7 @@ import type { Permission, WorkspaceContext, WorkspaceStore } from '../../workspa
 
 declare module 'fastify' {
   interface FastifyRequest { authUser: AuthUser | null; sessionHash: Buffer | null; workspaceContext: WorkspaceContext | null }
-  interface FastifyContextConfig { authOnly?: boolean; workspaceContextOnly?: boolean; permission?: Permission }
+  interface FastifyContextConfig { authOnly?: boolean; workspaceContextOnly?: boolean; permission?: Permission; providerWebhook?: boolean; providerMedia?: boolean }
 }
 
 export type AuthOptions = { appUrl: string; secureCookies: boolean };
@@ -31,6 +31,8 @@ export function registerSecurity(app: FastifyInstance, auth: AuthStore, workspac
     reply.header('Cache-Control', 'no-store');
     const route = request.routeOptions.url;
     if (request.method === 'GET' && (route === '/health/live' || route === '/health/ready')) return;
+    if (['GET','HEAD'].includes(request.method) && route === '/provider-media/:token' && request.routeOptions.config.providerMedia === true) return;
+    if (request.method === 'POST' && route === '/webhooks/rcs/:provider' && request.routeOptions.config.providerWebhook === true) return;
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
       if (request.headers.origin !== origin || request.headers['x-rcs-request'] !== '1') {
         return reply.code(403).send({ message: 'Origem da requisição não autorizada.' });
