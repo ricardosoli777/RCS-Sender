@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — explicações no editor de jornadas
+
+- Cards de etapas com finalidade, instruções e exemplos na configuração; passos para preparar mensagens, conectar, validar, publicar, ativar e inscrever leads dentro do editor.
+- Etapas numeradas para identificar os destinos; posição do desenho separada das conexões e contraste do painel lateral corrigido.
+- Orientações para condições, espera por evento, entrada por tag, inscrição de audiências e leitura das métricas.
+
 ## 2026-10-04 — configuração de fornecedores e criação guiada
 
 - Cinco adaptadores disponíveis para configurar pelo painel, sem declarar testes externos realizados. Conexões continuam não verificadas ao cadastrar.
