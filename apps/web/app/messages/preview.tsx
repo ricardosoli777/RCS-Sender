@@ -8,7 +8,7 @@ function Actions({ items,onReply }: { items: Suggestion[]; onReply(text: string)
   if(!items.length)return null;
   return <ul className="messageSuggestions" aria-label="Sugestões da mensagem">{items.map((item,index)=>{
     const url=item.type==='open_url'?safeUrl(item.url):null;
-    return <li key={index}>{item.type==='open_url' ? url ? <a className="button buttonSecondary" href={url} target="_blank" rel="noopener noreferrer">{item.text}</a> : <button type="button" disabled title="Informe uma URL HTTPS válida">{item.text}</button> : <button type="button" className="buttonSecondary" onClick={()=>onReply(item.text)}>{item.text}</button>}<small>{item.type==='reply'?'Resposta sugerida':url??'Informe uma URL HTTPS válida'}</small></li>;
+    return <li key={index}>{item.type==='open_url' ? url ? <a className="button buttonSecondary" href={url} target="_blank" rel="noopener noreferrer">{item.text}</a> : <button type="button" disabled title="Informe uma URL HTTPS válida">{item.text}</button> : <button type="button" className="buttonSecondary" onClick={()=>onReply(item.text)}>{item.text}</button>}{item.type==='reply' ? <small>Resposta sugerida</small> : !url ? <small>Informe uma URL HTTPS válida</small> : null}</li>;
   })}</ul>;
 }
 export default function MessagePreview({ content,workspaceId }: { content: MessageContent; workspaceId: string }) {
