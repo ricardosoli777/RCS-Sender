@@ -7,6 +7,7 @@
 - Supervisor dos processos API/web/worker/Caddy, healthcheck e contrato da borda para Cloudflare, cabeçalhos falsificados e callbacks.
 - Correção da categoria no PUT de mensagens, com regressão HTTP e assertiva E2E. Contrato da borda usa HTTP explícito para verificar Host e ordem de rejeição.
 - Smoke público isolado e backup/restore de Swarm, sem chamadas RCS ou credenciais versionadas.
+- Atributos Git fixam LF nos scripts e manifests Linux, inclusive no arquivo de release criado no Windows.
 
 ## 2026-10-04 — conclusão da construção local das waves
 
