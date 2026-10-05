@@ -1,6 +1,6 @@
 # Infobip
 
-Revisão documental: 04/10/2026. Adaptador inativo por padrão; testes locais não comprovam lançamento do agente nem acesso à conta.
+Revisão documental: 04/10/2026. Adaptador disponível para configuração; testes locais não comprovam lançamento do agente nem acesso à conta.
 
 Credenciais: `apiKey`, `baseHost`, `sender`, `webhookUsername` e `webhookPassword`. API usa autorização App e host restrito a `*.api.infobip.com`. Callbacks usam Basic configurado no Authentication Settings do Notification Profile, comparação constante e vínculo ao remetente; batches parcialmente inválidos são recusados.
 

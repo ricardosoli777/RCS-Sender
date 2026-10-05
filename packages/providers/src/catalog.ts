@@ -4,7 +4,7 @@ import { InfobipProvider } from './infobip.js';
 import { TwilioProvider } from './twilio.js';
 import { SinchProvider } from './sinch.js';
 import { ZenviaProvider } from './zenvia.js';
-/** Catalog creation performs no network I/O. Production activation requires separate evidence. */
+/** Built-ins are available for configuration; account verification is per connection. No network I/O. */
 export function documentedProviderRegistry() {
   const registry = new ProviderRegistry();
   const entries = [
@@ -14,6 +14,6 @@ export function documentedProviderRegistry() {
     [new SinchProvider(), 'sinch', 'https://developers.sinch.com/docs/conversation/callbacks'],
     [new ZenviaProvider(), 'zenvia', 'https://zenvia.github.io/zenvia-openapi-spec/v2/openapi.json'],
   ] as const;
-  for (const [adapter, name, reference] of entries) registry.register(adapter, { documentPath: `docs/providers/${name}.md`, reviewedAt: '2026-10-04', references: [reference], checks: { documentationReviewed: true, evidenceRecorded: true, contractTestsPassed: true, connectionTestPassed: false, credentialHandlingValidated: true, webhookValidationTested: true } });
+  for (const [adapter, name, reference] of entries) registry.register(adapter, { documentPath: `docs/providers/${name}.md`, reviewedAt: '2026-10-04', references: [reference], checks: { documentationReviewed: true, evidenceRecorded: true, contractTestsPassed: true, connectionTestPassed: false, credentialHandlingValidated: true, webhookValidationTested: true } }, { requireConnectionProof: false });
   return registry;
 }

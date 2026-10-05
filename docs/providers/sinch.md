@@ -1,6 +1,6 @@
 # Sinch Conversation RCS
 
-Revisão documental: 04/10/2026. Adaptador inativo por padrão, sem prova real de conta ou agente.
+Revisão documental: 04/10/2026. Adaptador disponível para configuração, sem confirmação remota implementada de conta ou agente.
 
 Credenciais: `projectId`, `appId`, `keyId`, `keySecret`, `region` (us/eu) e `webhookSecret`. Hosts regionais fixos e Basic para a API. Envio via messages:send com prioridade exclusiva RCS, sem fallback nem retry de POST.
 

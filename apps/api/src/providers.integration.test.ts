@@ -110,6 +110,11 @@ describe('provider connections with PostgreSQL and Redis', () => {
         const context = winner.value.workspace_id === workspaceA.id ? contextA : contextB;
         await expect(store.updateCredentials(context, winner.value.id, credentials, 'different-agent')).rejects.toThrow('Vínculo de agente indisponível.');
       }
+      const twilioInput={accountSid:`AC${'a'.repeat(32)}`,authToken:'local-only-callback-test',sender:'fixture-sender',webhookUrl:`https://example.test/webhooks/rcs/twilio?connectionId=${randomUUID()}`};
+      const twilio=await store.create(contextA,{providerId:'twilio',name:'Callback binding',environment:'test',credentials:twilioInput,externalAgentId:'fixture-sender'});
+      expect(new URL((await store.loadForProvider(contextA,twilio.id))!.credentials.webhookUrl!).searchParams.get('connectionId')).toBe(twilio.id);
+      await store.updateCredentials(contextA,twilio.id,twilioInput,'fixture-sender');
+      expect(new URL((await store.loadForProvider(contextA,twilio.id))!.credentials.webhookUrl!).searchParams.get('connectionId')).toBe(twilio.id);
     } finally {
       await app.close(); await db.end(); await redis.quit().catch(() => redis.disconnect());
       await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); await control.end();

@@ -2217,6 +2217,11 @@ spec:
       service_spec_rollback_identical_image: "passed; no schema downgrade claimed"
       evidence: "docs/deployment-arkitekt.md"
     unsupported_capabilities: "PDF and optional vendor operations without implemented documented contracts remain blocked."
+    provider_configuration_update:
+      authorization: "Owner requested all providers selectable, credential forms, creation guidance, favicon and clickable preview buttons."
+      catalog: "Five built-ins available to configure; no external connection evidence inferred."
+      account_gate: "Connections begin unverified; account, agent, consent and recipient validation remain required."
+      evidence: "docs/como-usar.md"
 
   waves:
 

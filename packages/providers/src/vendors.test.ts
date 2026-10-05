@@ -49,7 +49,7 @@ describe('documented vendor adapters without external requests', () => {
     expect(await provider.verifyWebhook(ctx,{...request,rawBody:Buffer.from(JSON.stringify({results:[{...event,sender:'other'}]}))})).toBe(false);
     expect(await provider.verifyWebhook(ctx,{...request,rawBody:Buffer.from(JSON.stringify({results:[event,{}]}))})).toBe(false);
   });
-  it('exposes five inactive adapters and performs no connection proof', () => { const registry = documentedProviderRegistry(); expect(registry.list()).toHaveLength(5); expect(registry.list().every((d) => !d.active && !d.evidence.checks.connectionTestPassed)).toBe(true); expect(() => registry.resolve('twilio')).toThrow(); });
+  it('offers all five adapters for configuration without claiming connection proof', () => { const registry = documentedProviderRegistry(); expect(registry.list()).toHaveLength(5); expect(registry.list().every((d) => d.active && !d.evidence.checks.connectionTestPassed)).toBe(true); expect(registry.resolve('twilio')).toBeInstanceOf(TwilioProvider); });
   const cases = [
     { name: 'infobip', Adapter: InfobipProvider, c: credentials.infobip, result: { messages: [{ messageId: 'id', destination: '5511999999999', status: { groupName: 'PENDING' } }] }, host: 'fixture.api.infobip.com', path: '/rcs/2/messages' },
     { name: 'twilio', Adapter: TwilioProvider, c: credentials.twilio, result: { sid: `SM${'b'.repeat(32)}`, account_sid: credentials.twilio.accountSid, from: 'rcs:sender', to: 'rcs:+5511999999999', status: 'queued' }, host: 'api.twilio.com', path: '/2010-04-01/Accounts/' },

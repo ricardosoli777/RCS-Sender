@@ -1,0 +1,6 @@
+import Link from 'next/link';
+import { Card } from '../ui';
+import { workspaceHref } from '../app-shell';
+export default function JourneyGuide({ workspace }: { workspace: string }) {
+  return <Card><h2>Como montar seu fluxo</h2><ol className="setupSteps"><li><Link href={workspaceHref('/messages',workspace)}>Crie e ative as mensagens</Link> de cada etapa. Título, texto, imagens e botões ficam na mensagem.</li><li>Dê um nome à jornada e clique em <strong>Criar jornada</strong>. O editor abre com <strong>Início</strong> e <strong>Fim</strong>.</li><li>Adicione etapas <strong>Mensagem</strong>, <strong>Espera</strong> e <strong>Condição</strong> pela barra do editor. Clique numa etapa para configurar no painel lateral.</li><li>Na etapa Mensagem, escolha a conexão e a versão da mensagem. Em <strong>Próxima etapa</strong>, selecione a etapa seguinte; você também pode conectar as saídas no canvas.</li><li>Confira o salvamento, clique em <strong>Validar fluxo</strong>, depois <strong>Publicar versão</strong> e <strong>Ativar jornada</strong>. Inscreva os contatos pelas opções de entrada.</li></ol><p><strong>Exemplo:</strong> Início → Mensagem de boas-vindas → Espera de 1 dia → Mensagem de oferta → Fim.</p></Card>;
+}

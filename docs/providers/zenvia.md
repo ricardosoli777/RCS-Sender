@@ -1,6 +1,6 @@
 # Zenvia RCS
 
-Revisão documental: 04/10/2026. Adaptador inativo por padrão, com testes de contrato locais.
+Revisão documental: 04/10/2026. Adaptador disponível para configuração, com testes de contrato locais e sem confirmação remota implementada de conta/agente.
 
 Credenciais: apiToken, sender, subscriptionId e webhookToken. POST /v2/channels/rcs/messages usa x-api-token, canal RCS e destinatário normalizado. Aceite exige ID, canal, remetente e destinatário compatíveis.
 

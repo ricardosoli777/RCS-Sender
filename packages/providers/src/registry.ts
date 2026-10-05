@@ -5,7 +5,7 @@ export type ProviderDescriptor = Readonly<{ metadata: ProviderMetadata; capabili
 
 export class ProviderRegistry {
   private readonly entries = new Map<string, { adapter: RcsProvider; descriptor: ProviderDescriptor }>();
-  register(adapter: RcsProvider, evidence: ProviderEvidence) {
+  register(adapter: RcsProvider, evidence: ProviderEvidence, options: { requireConnectionProof?: boolean } = {}) {
     const metadata = adapter.getProviderMetadata();
     if (!/^[a-z][a-z0-9_]{1,63}$/.test(metadata.id) || this.entries.has(metadata.id)) throw new Error('Identificador de provedor inválido ou duplicado');
     const keys = metadata.credentialSchema.map((field) => field.key);
@@ -21,7 +21,9 @@ export class ProviderRegistry {
       if (snapshot.capabilities[capability as keyof typeof optionalMethods] === 'supported' && typeof adapter[method] !== 'function') throw new Error('Capacidade sem implementação');
     }
     const reviewed = new Date(evidence.reviewedAt);
-    const active = activationChecks.every((key) => evidence.checks[key] === true) && /^\d{4}-\d{2}-\d{2}$/.test(evidence.reviewedAt)
+    // Built-in adapters may be configured before a customer's connection test.
+    // This does not claim an external test passed; each connection remains unverified.
+    const active = activationChecks.every((key) => (key === 'connectionTestPassed' && options.requireConnectionProof === false) || evidence.checks[key] === true) && /^\d{4}-\d{2}-\d{2}$/.test(evidence.reviewedAt)
       && !Number.isNaN(reviewed.getTime()) && reviewed.toISOString().slice(0, 10) === evidence.reviewedAt
       && evidence.documentPath.startsWith('docs/providers/') && evidence.references.length > 0
       && evidence.references.every((reference) => { try { const url = new URL(reference); return url.protocol === 'https:' && !url.username && !url.password; } catch { return false; } });

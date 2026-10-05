@@ -6,7 +6,7 @@ Plataforma de mensagens, campanhas e funis RCS independente de fornecedores, con
 
 O sistema inclui contatos e consentimentos, mensagens versionadas com categorias, texto/cards/carrosséis/imagens, campanhas com preparação e confirmação, filas duráveis, cadenciamento e controles. Jornadas permitem várias mensagens conforme o lead avança, esperas por tempo ou evento, condições, escolha de caminho por resposta, tags, pontuação, metas e webhooks. O editor visual tem autosave e publicação imutável.
 
-Google RBM, Infobip, Twilio, Sinch e Zenvia têm adaptadores construídos conforme seus contratos documentados, com testes locais e capacidades explícitas. Aparecem desativados até configuração e evidência específica de ativação. Capacidade desconhecida bloqueia a operação; PDF e operações opcionais sem contrato implementado permanecem não suportados. Consulte [provedores](docs/providers/README.md).
+Google RBM, Infobip, Twilio, Sinch e Zenvia têm adaptadores disponíveis para cadastrar credenciais em **Integrações**, com testes locais e capacidades explícitas. Cadastro não comprova conta ou agente disponíveis para envio. Capacidade desconhecida bloqueia a operação; PDF e operações opcionais sem contrato implementado permanecem não suportados. Consulte [provedores e limites de confirmação remota](docs/providers/README.md).
 
 Analytics, Inbox Lite, auditoria, heartbeat e recuperação de consumidores completam a operação. Mídia privada usa acesso temporário vinculado ao envio; credenciais e eventos são cifrados. Proprietários podem executar [rotação de chaves e compactação limitada](docs/history-maintenance.md).
 
@@ -38,6 +38,8 @@ Artefatos Linux de instalação, Caddy e backup estão em `ops/`. Consulte [oper
 A implantação no domínio `rcssender.arkitekt.space` usa [stack Swarm e acesso Paramiko versionados](docs/vps-arkitekt.md), integrados ao Traefik existente, sem publicar portas adicionais.
 
 Documentação: [arquitetura](docs/architecture.md), [mensagens](docs/messages.md), [campanhas](docs/campaigns.md), [funis](docs/journeys.md), [elegibilidade](docs/eligibility.md), [mídia](docs/media.md) e [workspaces](docs/workspaces.md).
+
+Guia prático: [onde inserir título, texto, imagens e botões; criar campanhas e jornadas](docs/como-usar.md). As telas também mostram os passos e os botões de URL da prévia são clicáveis. O favicon segue o símbolo de sinal roxo do app.
 
 ## Estrutura
 

@@ -15,6 +15,8 @@ VPS: stack independente Swarm, PostgreSQL 17/Redis 7 privados, 34 migrações ap
 
 Limites externos restantes: credenciais de fornecedores, agente lançado e entrega RCS real. Esses pontos foram reservados pelo usuário para depois.
 
+Nova autorização: liberar fornecedores para escolha e configuração pelo painel, melhorar orientações de campanhas/jornadas/imagens, adicionar favicon e botões de prévia clicáveis. Os cinco adaptadores agora permitem configuração, mantendo `connectionTestPassed=false`; salvar credenciais não envia nem testa automaticamente. Os quatro adaptadores fora Google ainda não confirmam acesso remoto no teste de conexão. Guias e limites em docs/como-usar.md e docs/providers/README.md.
+
 Capacidades ausentes por contrato continuam desconhecidas ou não suportadas. Twilio/Zenvia não recebem elegibilidade inventada. PDF e operações opcionais sem implementação documentada ficam bloqueados; file está preparado no domínio/editor para imagens privadas, sem declarar suporte externo genérico. Retenção é manual, limitada a corpos brutos terminados e grants vencidos; eventos, tentativas, versões e auditoria ficam preservados. Consulta remota individual universal não existe; reconciliação usa retornos autenticados e IDs locais aceitos pelo fornecedor.
 
 Não marcar o milestone como produção validada ou todas as provas externas concluídas. Os registros das waves distinguem construção local de aceitação externa.

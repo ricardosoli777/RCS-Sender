@@ -132,6 +132,12 @@ td small { display: block; color: #a1a1aa; margin-top: 5px; overflow-wrap: anywh
 .contactForm label { display: grid; gap: 8px; font-size: 13px; min-width: 0; }
 .contactForm input,.contactForm select { min-width: 0; max-width: 100%; }
 .contactForm button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.setupSteps { padding-left: 22px; color: #d4d4d8; line-height: 1.7; }
+.setupSteps li { margin-block: 10px; }
+.integrationConnection { padding-block: 20px; border-top: 1px solid #27272f; overflow-wrap: anywhere; }
+.integrationConnection label { display: grid; gap: 8px; min-width: 0; }
+.integrationConnection input { min-width: 0; }
+details summary { cursor: pointer; padding-block: 12px; font-weight: 600; }
 .contactForm textarea { width: 100%; max-width: 100%; box-sizing: border-box; color: #fafafa; background: #09090b; border: 1px solid #52525b; border-radius: 8px; padding: .75rem; font: inherit; resize: vertical; }
 .contactsFeedback { grid-column: 1 / -1; }
 .audienceRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-block: 1rem; }
@@ -147,6 +153,7 @@ td small { display: block; color: #a1a1aa; margin-top: 5px; overflow-wrap: anywh
 .messageSuggestions { display: grid; gap: 8px; list-style: none; padding: 0; }
 .messageSuggestions li { border: 1px solid #583176; border-radius: 10px; padding: 10px; font-size: 13px; }
 .messageSuggestions small { display: block; color: #a1a1aa; margin-top: 4px; }
+.messageSuggestions .button,.messageSuggestions button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .messageFields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 14px; }
 .messageFields legend { font-size: 14px; font-weight: 600; padding: 16px 0; }
 .messageFields small { color: #a1a1aa; overflow-wrap: anywhere; }

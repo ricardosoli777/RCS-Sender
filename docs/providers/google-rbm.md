@@ -1,6 +1,6 @@
 # Google RCS for Business
 
-Revisão documental: 04/10/2026. Adaptador registrado no catálogo e inativo por padrão. A construção usa documentação oficial e transporte simulado; conta, agente lançado, credenciais e envios reais ficam para a ativação posterior.
+Revisão documental: 04/10/2026. Adaptador disponível no catálogo para configurar; conexões reais continuam não verificadas até teste explícito. A construção usa documentação oficial e transporte simulado; conta, agente lançado, credenciais e envios reais ficam para a ativação posterior.
 
 Credenciais: `clientEmail`, `privateKey` RSA, `agentName`, `region` e `webhookToken`. OAuth usa a biblioteca oficial, scopes separados e cache apenas no contexto da operação. Hosts regionais fixos, cancelamento, respostas limitadas e ausência de retry automático de POST.
 

@@ -1,6 +1,6 @@
 # Twilio RCS
 
-Revisão documental: 04/10/2026. Adaptador inativo por padrão; sem acesso real à conta.
+Revisão documental: 04/10/2026. Adaptador disponível para configuração; sem confirmação remota implementada de conta ou agente.
 
 Credenciais: accountSid, authToken, sender e webhookUrl HTTPS exatamente vinculada à conexão. Texto simples usa Messages.json com From/To rcs:. Conteúdo estruturado cria primeiro um recurso na Content API, valida seu HX SID e envia ContentSid. A friendly_name determinística não é uma garantia de idempotência remota. Uma criação ambígua não é repetida automaticamente.
 

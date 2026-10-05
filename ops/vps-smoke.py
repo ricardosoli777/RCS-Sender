@@ -83,14 +83,14 @@ def main():
         raise RuntimeError("Worker did not complete the local QA journey")
     assert request("GET", base+"/operations")["worker"] == "healthy"
     catalog = request("GET", base+"/providers/catalog")["providers"]
-    assert len(catalog) == 5 and all(not item["active"] for item in catalog)
+    assert len(catalog) == 5 and all(item["active"] for item in catalog)
     request("POST", "/api/auth/logout", {}, 204)
     request("GET", "/api/auth/me", expected=401)
     request("POST", "/api/auth/login", {"email": account["email"], "password": account["password"]})
     request("POST", "/api/auth/logout", {}, 204)
     account.update({"workspaceId": workspace, "journeyId": journey, "state": "smoke_passed"})
     output.write_text(json.dumps(account))
-    print("Public smoke passed: HTTPS, Secure cookie, CSRF, isolation, message revision/category, worker journey, inactive providers, logout/login.")
+    print("Public smoke passed: HTTPS, Secure cookie, CSRF, isolation, message revision/category, worker journey, available providers, logout/login.")
 
 
 if __name__ == "__main__":

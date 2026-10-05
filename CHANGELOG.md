@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-04 — configuração de fornecedores e criação guiada
+
+- Cinco adaptadores disponíveis para configurar pelo painel, sem declarar testes externos realizados. Conexões continuam não verificadas ao cadastrar.
+- Formulários privados de cadastro/substituição de credenciais, teste explícito e URL de callback. Callback Twilio vinculado ao ID criado pelo servidor.
+- Guias nas telas de mensagens, campanhas e jornadas; título, texto, imagem e botão reunidos em Rich card.
+- Botões HTTPS clicáveis na prévia, com nova aba isolada; URLs inválidas bloqueadas e respostas simuladas sem envio. Ações de carrossel também são interativas.
+- Favicon SVG Purple Signal e verificação de acesso público ao ícone.
+- Runner nativo resolve Vitest pelo pacote da API tanto no Windows quanto em instalação limpa Linux.
+
 ## 2026-10-04 — implantação VPS com Paramiko e Swarm
 
 - Transporte SSH/SFTP Paramiko com credenciais fora do repositório e chave de host fixada; target não secreto rcssender.arkitekt.space.

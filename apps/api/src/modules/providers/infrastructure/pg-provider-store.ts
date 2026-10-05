@@ -12,6 +12,12 @@ const columns = 'id, workspace_id, provider_id, name, environment, status, exter
 function assertAgentIdentity(identity: string | undefined) {
   if (identity !== undefined && (!identity.trim() || identity.length > 256)) throw new ProviderBindingError();
 }
+function boundCredentials(providerId: string,id: string,credentials: Credentials): Credentials {
+  if(providerId!=='twilio')return credentials;
+  const callback=new URL(credentials.webhookUrl!);
+  callback.searchParams.set('connectionId',id);
+  return {...credentials,webhookUrl:callback.href};
+}
 function rethrowBindingConflict(error: unknown): never {
   if (error && typeof error === 'object' && 'code' in error && error.code === '23505'
     && 'constraint' in error && error.constraint === 'provider_connections_agent_unique') throw new ProviderBindingError();
@@ -45,7 +51,7 @@ export class PgProviderStore implements ProviderStore {
       assertAgentIdentity(input.externalAgentId);
       const connection = (await client.query<ProviderConnection>(`INSERT INTO provider_connections (id, workspace_id, provider_id, name, environment, external_agent_id)
         VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${columns}`, [randomUUID(), context.workspace_id, input.providerId, input.name, input.environment, input.externalAgentId ?? null])).rows[0]!;
-      const ciphertext = this.cipher.encrypt(JSON.stringify(input.credentials), credentialContext(connection));
+      const ciphertext = this.cipher.encrypt(JSON.stringify(boundCredentials(connection.provider_id,connection.id,input.credentials)), credentialContext(connection));
       await client.query('INSERT INTO provider_credentials (workspace_id, connection_id, ciphertext) VALUES ($1, $2, $3)', [context.workspace_id, connection.id, ciphertext]);
       await this.audit(client, context, connection.id, 'provider.connection_created');
       return connection;
@@ -61,7 +67,7 @@ export class PgProviderStore implements ProviderStore {
       // A bound connection cannot silently change agents or release an existing reservation.
       if (connection.external_agent_id !== null && connection.external_agent_id !== externalAgentId) throw new ProviderBindingError();
       const saved = await client.query('UPDATE provider_credentials SET ciphertext = $3, updated_at = now() WHERE workspace_id = $1 AND connection_id = $2',
-        [context.workspace_id, id, this.cipher.encrypt(JSON.stringify(credentials), credentialContext(connection))]);
+        [context.workspace_id, id, this.cipher.encrypt(JSON.stringify(boundCredentials(connection.provider_id,id,credentials)), credentialContext(connection))]);
       if (saved.rowCount !== 1) throw new Error('Credenciais indisponíveis');
       await client.query("UPDATE provider_connections SET status = 'unverified', external_agent_id = $3, updated_at = now() WHERE workspace_id = $1 AND id = $2", [context.workspace_id, id, externalAgentId ?? null]);
       await this.audit(client, context, id, 'provider.credentials_updated');
