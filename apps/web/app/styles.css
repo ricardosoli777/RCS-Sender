@@ -130,6 +130,8 @@ td small { display: block; color: #a1a1aa; margin-top: 5px; overflow-wrap: anywh
 /* Contacts reuse the existing Purple Signal forms and responsive tables. */
 .contactForm { display: grid; gap: 1rem; }
 .contactForm label { display: grid; gap: 8px; font-size: 13px; min-width: 0; }
+.contactForm input,.contactForm select { min-width: 0; max-width: 100%; }
+.contactForm button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .contactForm textarea { width: 100%; max-width: 100%; box-sizing: border-box; color: #fafafa; background: #09090b; border: 1px solid #52525b; border-radius: 8px; padding: .75rem; font: inherit; resize: vertical; }
 .contactsFeedback { grid-column: 1 / -1; }
 .audienceRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-block: 1rem; }

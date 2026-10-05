@@ -25,7 +25,13 @@ test('contact consent UI records declarations and revocations while preserving o
   page.once('dialog',(dialog) => { void dialog.accept(); }); await page.getByRole('button',{ name: 'Registrar declaração ou revogação',exact: true }).click();
   await expect(page.getByRole('table',{ name: /registro de cada finalidade/ })).toContainText('Consentimento revogado'); saved = await (await page.request.get(consentBase)).json(); expect(saved.consents[0]).toMatchObject({ state: 'revoked',revision: 3 });
   expect((await page.request.post(`${base}/contacts/${contact.id}/opt-out`,{ headers,data: {} })).status()).toBe(204); await page.reload(); await expect(page.getByText('Opt-out registrado.',{ exact: false })).toBeVisible();
-  for (const width of [375,320]) { await page.setViewportSize({ width,height: 812 }); expect(await page.evaluate(() => document.documentElement.scrollWidth<=window.innerWidth)).toBe(true); }
+  for (const width of [375,320]) {
+    await page.setViewportSize({ width,height: 812 });
+    const overflow = await page.evaluate(() => Array.from(document.querySelectorAll('body *')).filter((element) => {
+      const rect = element.getBoundingClientRect(); return rect.right>window.innerWidth+1 && getComputedStyle(element).position !== 'absolute' && !element.closest('nav');
+    }).map((element) => ({ tag: element.tagName,className: element.className,width: element.getBoundingClientRect().width })));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth<=window.innerWidth),JSON.stringify({ width,overflow })).toBe(true);
+  }
   const readerContext = await browser.newContext({ baseURL: origin,extraHTTPHeaders: { 'x-rcs-edge-token': 'a'.repeat(64),'x-rcs-client-ip': '192.0.2.42' } });
   try {
     const reader = await readerContext.newPage(); const email = `consent-reader-${suffix}@example.test`;

@@ -109,8 +109,8 @@ def main():
     # A migration failure prevents enabling the public application task.
     subprocess.run(["docker", "run", "--rm", "--user", "0:0", "--network", target["stack"]+"_internal",
                     "-v", str(env_path)+":/run/secrets/rcs_runtime_env:ro",
-                    image, "node", "--env-file=/run/secrets/rcs_runtime_env", "--import", "tsx",
-                    "packages/database/src/migrate.ts"], check=True)
+                    image, "node", "--env-file=/run/secrets/rcs_runtime_env",
+                    "packages/database/dist/migrate.js"], check=True)
     record = {"revision": args.revision, "image": image, "image_id": json.loads(call("docker", "image", "inspect", image))[0]["Id"],
               "database_images": digests, "domain": target["domain"], "time_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "state": "migrated", "production_env": str(env_path)}

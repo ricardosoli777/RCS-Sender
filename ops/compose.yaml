@@ -35,7 +35,7 @@ services:
       dockerfile: ops/Dockerfile
     network_mode: host
     env_file: ${RCS_ENV_FILE:?required}
-    command: [node, --import, tsx, packages/database/src/migrate.ts]
+    command: [node, packages/database/dist/migrate.js]
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
