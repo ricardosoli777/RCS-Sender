@@ -2198,7 +2198,7 @@ spec:
     status: "local_construction_complete_through_wave_29"
     scope: "Implementation and local verification; not external production acceptance. Earlier execution_notes retain historical checks."
     migrations: 34
-    tests_passed: 442
+    tests_passed: 443
     native_domain_checks_passed: 9
     chromium_scenarios_passed: 7
     clean_frozen_install_and_build: "passed"
@@ -2207,7 +2207,15 @@ spec:
     evidence: "docs/validation.md"
     later_operational_validation:
       - "Provider credentials, account/agent activation and real delivery"
-      - "Docker/VPS installation, public HTTPS and deployment/rollback"
+    vps_validation:
+      public_origin: "https://rcssender.arkitekt.space"
+      status: "deployed_and_smoke_verified"
+      stack: "rcssender"
+      postgres_major: 17
+      redis_major: 7
+      isolated_backup_restore: "passed"
+      service_spec_rollback_identical_image: "passed; no schema downgrade claimed"
+      evidence: "docs/deployment-arkitekt.md"
     unsupported_capabilities: "PDF and optional vendor operations without implemented documented contracts remain blocked."
 
   waves:

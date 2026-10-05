@@ -7,6 +7,8 @@ import re
 import secrets
 import subprocess
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 
@@ -31,6 +33,27 @@ def wait_service(name, image=None):
                 return ids[0]
         time.sleep(2)
     raise RuntimeError(f"Service did not become healthy: {name}")
+
+
+def wait_stopped(name):
+    for _ in range(90):
+        if not call("docker", "ps", "-q", "--filter", f"label=com.docker.swarm.service.name={name}"):
+            return
+        time.sleep(2)
+    raise RuntimeError(f"Service did not stop before migration: {name}")
+
+
+def wait_public_origin(domain):
+    request = urllib.request.Request("https://"+domain+"/login", headers={"User-Agent": "curl/8.10.1"})
+    for _ in range(30):
+        try:
+            with urllib.request.urlopen(request, timeout=10) as response:
+                if response.status == 200:
+                    return
+        except (urllib.error.URLError, TimeoutError):
+            pass
+        time.sleep(2)
+    raise RuntimeError("Public HTTPS route did not become ready")
 
 
 def main():
@@ -105,6 +128,7 @@ def main():
     rendered_path.write_bytes(rendered)
     subprocess.run(["docker", "compose", "-f", str(rendered_path), "config", "--quiet"], check=True)
     subprocess.run(["docker", "stack", "deploy", "--resolve-image", "never", "-c", str(rendered_path), target["stack"]], check=True)
+    wait_stopped(target["stack"]+"_app")
     wait_service(target["stack"]+"_postgres")
     wait_service(target["stack"]+"_redis")
     # A migration failure prevents enabling the public application task.
@@ -119,6 +143,7 @@ def main():
     if args.activate:
         subprocess.run(["docker", "service", "scale", "--detach=true", target["stack"]+"_app=1"], check=True)
         wait_service(target["stack"]+"_app", image)
+        wait_public_origin(target["domain"])
         record["state"] = "healthy"
         (root / "deployment.json").write_text(json.dumps(record, indent=2)+"\n")
         link = shared.parent / "current"

@@ -1,8 +1,8 @@
 # Prontidão e deployment
 
-A construção e verificação locais estão concluídas. Passaram build, tipos, lint, suíte completa, cenários Chromium, domínio com PostgreSQL nativo, instalação isolada e backup/restauração nativos. Consulte [validação](validation.md). Não houve deployment, dry run Docker/VPS, ativação de fornecedor ou envio RCS real.
+A construção está concluída e a aplicação foi implantada em https://rcssender.arkitekt.space. A CI passou com PostgreSQL 17/Redis 7; HTTPS público e da origem, sessão, isolamento, avanço de jornada pelo worker, backup/restauração e rollback do serviço foram verificados. Consulte [validação](validation.md) e [evidências da VPS](deployment-arkitekt.md). Não houve ativação de fornecedor ou envio RCS real.
 
-Os arquivos `ops/` destinam-se a VPS Linux. O compose define PostgreSQL 17/Redis 7; os serviços locais de validação usaram PostgreSQL 18/Redis 8. Aplicações e bancos escutam em loopback e somente Caddy deve publicar 80/443.
+Na VPS Arkitekt, use a [stack Swarm](vps-arkitekt.md): bancos privados, API/web em loopback dentro da tarefa da aplicação e Caddy interno atrás do Traefik existente. Não há novas portas publicadas. O procedimento compose abaixo é uma alternativa para uma VPS dedicada sem o proxy existente; não execute uma segunda instalação sobre a stack publicada.
 
 Use cópia privada de `.env.example` com `NODE_ENV=production`, domínio HTTPS, URLs locais, senhas, dois segredos de proxy distintos e chaves de cifra independentes. Acrescente `RCS_ENV_FILE` absoluto, `RCS_DOMAIN`, `RCS_IMAGE` com tag imutável, `POSTGRES_PASSWORD` e `REDIS_PASSWORD`. Preserve permissão 600; não versione o arquivo nem imprima configuração com segredos.
 

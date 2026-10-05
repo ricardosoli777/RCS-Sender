@@ -23,7 +23,7 @@ def main():
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
 
     def request(method, path, data=None, expected=200, mutation_headers=True):
-        headers = {}
+        headers = {"User-Agent": "curl/8.10.1", "Accept": "application/json,text/html;q=0.9"}
         if method != "GET" and mutation_headers:
             headers.update({"Origin": origin, "X-RCS-Request": "1"})
         body = None if data is None else json.dumps(data).encode()

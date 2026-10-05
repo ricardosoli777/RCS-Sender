@@ -2,7 +2,7 @@
 
 # RCS Sender
 
-Plataforma de mensagens, campanhas e funis RCS independente de fornecedores, conforme [MASTER-SPEC 6.0.0](MASTER-SPEC.yaml). Construção local das waves concluída; configuração das contas e uso das APIs reais ficam para depois. Nenhum envio RCS real ou deployment externo foi realizado.
+Plataforma de mensagens, campanhas e funis RCS independente de fornecedores, conforme [MASTER-SPEC 6.0.0](MASTER-SPEC.yaml). As waves estão construídas e a aplicação está publicada em **https://rcssender.arkitekt.space**. Crie sua conta para abrir seu workspace. Configuração das contas de fornecedores e uso das APIs reais ficam para depois; nenhum envio RCS real foi realizado.
 
 O sistema inclui contatos e consentimentos, mensagens versionadas com categorias, texto/cards/carrosséis/imagens, campanhas com preparação e confirmação, filas duráveis, cadenciamento e controles. Jornadas permitem várias mensagens conforme o lead avança, esperas por tempo ou evento, condições, escolha de caminho por resposta, tags, pontuação, metas e webhooks. O editor visual tem autosave e publicação imutável.
 
@@ -31,9 +31,9 @@ Abra http://localhost:3000 e crie uma conta; o cadastro cria seu workspace. A AP
 
 ## Verificação e operação
 
-Build, tipos, lint, testes, Chromium, instalação isolada com lockfile congelado e backup/restauração nativos foram executados. Resultados e limites estão em [validação](docs/validation.md). A CI está configurada para repetir testes com PostgreSQL 17/Redis 7; sua configuração não constitui resultado remoto desta revisão.
+Build, tipos, lint, testes, Chromium, instalação isolada com lockfile congelado e backup/restauração nativos foram executados. Resultados e limites estão em [validação](docs/validation.md). A [CI da revisão 3ef8f44](https://github.com/ricardosoli777/RCS-Sender/actions/runs/37248212199) passou com PostgreSQL 17/Redis 7: 443 testes, nove verificações nativas e sete cenários Chromium.
 
-Artefatos Linux de instalação, Caddy e backup estão em `ops/`. Consulte [operação](docs/operations.md) e [prontidão](docs/production-readiness.md). VPS, DNS, HTTPS público, ativação dos fornecedores e entrega real exigem validação no ambiente correspondente.
+Artefatos Linux de instalação, Caddy e backup estão em `ops/`. Consulte [operação](docs/operations.md), [prontidão](docs/production-readiness.md) e [evidências da VPS](docs/deployment-arkitekt.md). HTTPS público, sessão, worker, backup/restauração e reversão do serviço foram verificados. Ativação dos fornecedores e entrega real continuam para depois.
 
 A implantação no domínio `rcssender.arkitekt.space` usa [stack Swarm e acesso Paramiko versionados](docs/vps-arkitekt.md), integrados ao Traefik existente, sem publicar portas adicionais.
 

@@ -11,6 +11,10 @@
 - Runner nativo resolve Vitest pelo pacote da API, funcionando em instalação limpa Linux sem depender de hoisting incidental do Windows.
 - Compatibilidade da implantação com Docker 20.10; releases apenas de operação/documentação reutilizam binários verificados sob guarda de diff, com revisão de origem registrada.
 - Migração de produção executa o JavaScript compilado, sem resolução de ferramenta TypeScript na raiz do monorepo.
+- Healthcheck lê Docker Secrets e autentica o acesso interno ao Next.js; convergência tem prazo e confere a imagem esperada.
+- Atualizações esperam a tarefa anterior parar antes de migrar e aguardam o HTTPS público após a saúde interna.
+- Controles de consentimento limitados à largura móvel; CI passou com 443 testes, nove provas nativas e sete E2E Chromium.
+- Publicação HTTPS verificada, smoke público sem envio RCS, backup restaurado em banco novo e rollback do serviço com imagem idêntica. Evidências em docs/deployment-arkitekt.md.
 
 ## 2026-10-04 — conclusão da construção local das waves
 
