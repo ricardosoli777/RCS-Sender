@@ -1,0 +1,15 @@
+# VPS Arkitekt — implantação versionada
+
+Alvo público: https://rcssender.arkitekt.space. A configuração não secreta está em [arkitekt.json](../ops/targets/arkitekt.json); acesso SSH usa [vps.py](../ops/vps.py) e o arquivo privado informado pelo titular, fora do repositório. A primeira chave SSH é fixada localmente; mudança posterior é recusada. Senha nunca é copiada para Git ou VPS.
+
+A VPS Debian 12 já possui Docker Swarm/Traefik. O RCS Sender usa uma stack independente `rcssender` e o resolver HTTPS existente. Nenhuma porta nova é publicada. PostgreSQL 17 e Redis 7 têm volumes próprios e rede interna; a tarefa da aplicação compartilha loopback entre API, Next.js, worker e Caddy. O supervisor encerra os demais processos quando um falha, permitindo recuperação pelo Swarm. A implantação inicial tem uma réplica; escalar a tarefa também escala o worker.
+
+O [Caddy interno](../ops/Caddyfile.swarm) autentica os proxies para API/web e rejeita Host incorreto. Confia no encaminhamento da rede do Traefik. `CF-Connecting-IP` só é utilizado quando o IP apurado é de uma das redes oficiais Cloudflare; cabeçalhos de clientes diretos não substituem o IP. Ranges devem ser revisados quando a infraestrutura mudar. Referências: [Swarm/Traefik](https://doc.traefik.io/traefik/reference/install-configuration/providers/swarm/), [Caddy proxies](https://caddyserver.com/docs/caddyfile/options), [Cloudflare headers](https://developers.cloudflare.com/fundamentals/reference/http-headers/) e [ranges](https://www.cloudflare.com/ips/).
+
+Cada release usa arquivo criado por `git archive` de um commit completo, checksum verificado na transferência e imagem `rcs-sender:<commit>`. Os fontes ficam em `/opt/rcs-sender/releases/<commit>`; `deployment.json` registra revisão, ID da imagem, digests dos bancos e estado. `/opt/rcs-sender/current` aponta para o release saudável. Arquivos de operação e target ficam no Git; passwords, chaves e sessões permanecem privados.
+
+[deploy-swarm.py](../ops/deploy-swarm.py) cria os segredos apenas na primeira instalação, em `/opt/rcs-sender/shared` com permissões restritas, e os injeta por Docker Secrets. Credenciais existentes nunca são substituídas. Sem os segredos originais, volumes existentes bloqueiam uma inicialização nova. Preservar esse diretório e as chaves de cifra é necessário para recuperar dados.
+
+Fluxo: construir `ops/Dockerfile --target swarm`, verificar `ops/swarm-edge-check.mjs`, executar `python3 ops/deploy-swarm.py <commit> --activate`. O script prepara bancos com app desligado, espera saúde, aplica migrações e somente depois ativa a tarefa. Atualizações requerem backup e parada do worker antes de migrar; um release com migração incompatível não admite rollback apenas da imagem. A configuração inicial não ativa fornecedores RCS.
+
+Backup: execute `pg_dump` dentro da tarefa PostgreSQL, preserve checksum e restaure em banco novo, sem apagar volumes. Nunca use uma base de testes de desenvolvimento para validar produção. O histórico de provas e a revisão efetivamente implantada ficam em `docs/deployment-arkitekt.md` após a verificação pública.

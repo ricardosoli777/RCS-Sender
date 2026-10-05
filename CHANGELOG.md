@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — implantação VPS com Paramiko e Swarm
+
+- Transporte SSH/SFTP Paramiko com credenciais fora do repositório e chave de host fixada; target não secreto rcssender.arkitekt.space.
+- Stack independente para Traefik existente, bancos privados, Docker Secrets, releases por commit e migração antes da ativação.
+- Supervisor dos processos API/web/worker/Caddy, healthcheck e contrato da borda para Cloudflare, cabeçalhos falsificados e callbacks.
+
 ## 2026-10-04 — conclusão da construção local das waves
 
 - Formatos avançados nos cinco adaptadores documentados; elegibilidade Google/Infobip e Sinch assíncrona, autenticação específica dos callbacks e desafios Google. Contas continuam desativadas até configuração posterior.

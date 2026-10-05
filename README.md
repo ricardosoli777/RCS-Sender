@@ -35,6 +35,8 @@ Build, tipos, lint, testes, Chromium, instalação isolada com lockfile congelad
 
 Artefatos Linux de instalação, Caddy e backup estão em `ops/`. Consulte [operação](docs/operations.md) e [prontidão](docs/production-readiness.md). VPS, DNS, HTTPS público, ativação dos fornecedores e entrega real exigem validação no ambiente correspondente.
 
+A implantação no domínio `rcssender.arkitekt.space` usa [stack Swarm e acesso Paramiko versionados](docs/vps-arkitekt.md), integrados ao Traefik existente, sem publicar portas adicionais.
+
 Documentação: [arquitetura](docs/architecture.md), [mensagens](docs/messages.md), [campanhas](docs/campaigns.md), [funis](docs/journeys.md), [elegibilidade](docs/eligibility.md), [mídia](docs/media.md) e [workspaces](docs/workspaces.md).
 
 ## Estrutura

@@ -1,0 +1,34 @@
+{
+  admin off
+  auto_https off
+  servers {
+    trusted_proxies static {$RCS_TRUSTED_PROXY_CIDR}
+    trusted_proxies_strict
+    client_ip_headers X-Forwarded-For
+  }
+}
+http://:8080 {
+  @wrongHost not host {$RCS_DOMAIN}
+  respond @wrongHost 421
+  @cloudflare client_ip {$RCS_CLOUDFLARE_CIDRS}
+  route {
+  vars rcs_client_ip {client_ip}
+  vars @cloudflare rcs_client_ip {http.request.header.CF-Connecting-IP}
+  @callbacks path /webhooks/rcs/* /provider-media/*
+  handle @callbacks {
+    reverse_proxy 127.0.0.1:3001 {
+      header_up X-RCS-Proxy-Token {$RCS_API_PROXY_SECRET}
+      header_up X-Forwarded-For {http.vars.rcs_client_ip}
+      header_up -X-RCS-Edge-Token
+    }
+  }
+  handle {
+    reverse_proxy 127.0.0.1:3000 {
+      header_up X-RCS-Edge-Token {$RCS_EDGE_PROXY_SECRET}
+      header_up X-RCS-Client-IP {http.vars.rcs_client_ip}
+      header_up X-Forwarded-For {http.vars.rcs_client_ip}
+      header_up -X-RCS-Proxy-Token
+    }
+  }
+  }
+}

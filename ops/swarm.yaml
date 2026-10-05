@@ -1,0 +1,88 @@
+version: '3.8'
+services:
+  postgres:
+    image: ${RCS_POSTGRES_IMAGE}
+    environment:
+      POSTGRES_DB: rcs_sender
+      POSTGRES_USER: rcs_sender
+      POSTGRES_PASSWORD_FILE: /run/secrets/rcs_postgres_password
+    secrets: [rcs_postgres_password]
+    networks: [internal]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U rcs_sender -d rcs_sender']
+      interval: 10s
+      retries: 12
+    deploy:
+      placement:
+        constraints: ['node.hostname == ${RCS_NODE}']
+      resources:
+        limits: {memory: 512M}
+      restart_policy: {condition: any, delay: 5s}
+      labels: {traefik.enable: 'false'}
+  redis:
+    image: ${RCS_REDIS_IMAGE}
+    command: [sh, -c, 'exec redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy noeviction --requirepass "$$(cat /run/secrets/rcs_redis_password)"']
+    secrets: [rcs_redis_password]
+    networks: [internal]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$(cat /run/secrets/rcs_redis_password)" redis-cli ping | grep -q PONG']
+      interval: 10s
+      retries: 12
+    deploy:
+      placement:
+        constraints: ['node.hostname == ${RCS_NODE}']
+      resources:
+        limits: {memory: 256M}
+      restart_policy: {condition: any, delay: 5s}
+      labels: {traefik.enable: 'false'}
+  app:
+    image: ${RCS_IMAGE}
+    secrets: [rcs_runtime_env]
+    networks: [internal, proxy]
+    healthcheck:
+      test: [CMD, node, ops/swarm-health.mjs]
+      interval: 20s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
+    stop_grace_period: 30s
+    deploy:
+      replicas: ${RCS_APP_REPLICAS:-0}
+      placement:
+        constraints: ['node.hostname == ${RCS_NODE}']
+      resources:
+        limits: {memory: 1536M}
+      update_config: {parallelism: 1, order: stop-first, failure_action: rollback}
+      rollback_config: {parallelism: 1, order: stop-first}
+      restart_policy: {condition: any, delay: 10s}
+      labels:
+        traefik.enable: 'true'
+        traefik.swarm.network: ${RCS_PROXY_NETWORK}
+        traefik.http.routers.rcssender.rule: 'Host(`${RCS_DOMAIN}`)'
+        traefik.http.routers.rcssender.entrypoints: websecure
+        traefik.http.routers.rcssender.tls.certresolver: ${RCS_CERT_RESOLVER}
+        traefik.http.routers.rcssender.service: rcssender
+        traefik.http.services.rcssender.loadbalancer.server.port: '8080'
+networks:
+  internal:
+    driver: overlay
+    internal: true
+    attachable: true
+  proxy:
+    external: true
+    name: ${RCS_PROXY_NETWORK}
+volumes:
+  postgres-data:
+  redis-data:
+secrets:
+  rcs_postgres_password:
+    external: true
+    name: ${RCS_POSTGRES_SECRET}
+  rcs_redis_password:
+    external: true
+    name: ${RCS_REDIS_SECRET}
+  rcs_runtime_env:
+    external: true
+    name: ${RCS_RUNTIME_SECRET}
