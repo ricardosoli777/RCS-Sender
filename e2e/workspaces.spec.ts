@@ -60,7 +60,7 @@ test('register, workspace isolation, workspace switch, logout and login', async 
   expect(providerConnections.status()).toBe(200);
   expect(await providerConnections.json()).toEqual({ connections: [] });
   const catalog=await (await page.request.get(`/api/workspaces/${workspaceA}/providers/catalog`)).json();
-  expect(catalog.providers).toHaveLength(5);expect(catalog.providers.every((provider:{active:boolean})=>!provider.active)).toBe(true);
+  expect(catalog.providers).toHaveLength(5);expect(catalog.providers.every((provider:{active:boolean})=>provider.active)).toBe(true);
 
   const bobContext = await browser.newContext({ baseURL: 'http://127.0.0.1:3100',
     extraHTTPHeaders: { 'x-rcs-edge-token': 'a'.repeat(64), 'x-rcs-client-ip': '192.0.2.11' } });
