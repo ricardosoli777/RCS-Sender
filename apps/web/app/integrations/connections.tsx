@@ -1,6 +1,7 @@
 'use client';
 import { useId,useState,type FormEvent } from 'react';
 import { Button,Card } from '../ui';
+import ProviderGuide from './provider-guide';
 
 export type Provider = { metadata: { id: string; name: string; environments: string[]; credentialSchema: { key: string; label: string; required: boolean; secret: boolean }[] }; active: boolean; capabilities: Record<string,string> };
 export type Connection = { id: string; provider_id: string; name: string; environment: string; status: 'unverified' | 'connected' | 'disconnected' | 'disabled'; external_agent_id: string | null };
@@ -14,11 +15,11 @@ function ConnectionForm({ provider,connection,busy,origin,onSave }: { provider: 
     event.preventDefault(); if(busy)return;
     if(await onSave(name,environment,credentials)){setCredentials({});setName('');}
   }
-  return <form className="contactForm" onSubmit={event=>void submit(event)}><fieldset className="messageFields" disabled={busy || !provider.active}><legend>{connection ? `Substituir credenciais de ${connection.name}` : `Adicionar conexão ${provider.metadata.name}`}</legend>
+  return <><ProviderGuide provider={provider}/><form className="contactForm" onSubmit={event=>void submit(event)}><fieldset className="messageFields" disabled={busy || !provider.active}><legend>{connection ? `Substituir credenciais de ${connection.name}` : `Adicionar conexão ${provider.metadata.name}`}</legend>
     {!connection && <><label htmlFor={`${id}-name`}>Nome da conexão<input id={`${id}-name`} required maxLength={100} value={name} onChange={event=>setName(event.target.value)} placeholder="Minha conta RCS"/></label><label htmlFor={`${id}-environment`}>Ambiente<select id={`${id}-environment`} value={environment} onChange={event=>setEnvironment(event.target.value)}>{provider.metadata.environments.map(value=><option key={value} value={value}>{value==='test'?'Teste':value==='production'?'Produção':value}</option>)}</select></label></>}
     {provider.metadata.credentialSchema.map(field=><label key={field.key} htmlFor={`${id}-${field.key}`}>{field.label}{field.key==='privateKey' ? <textarea id={`${id}-${field.key}`} required={field.required} rows={5} maxLength={16384} autoComplete="off" spellCheck={false} value={credentials[field.key]??''} onChange={event=>setCredentials({...credentials,[field.key]:event.target.value})}/> : <input id={`${id}-${field.key}`} type={field.secret?'password':'text'} required={field.required} maxLength={16384} autoComplete="off" spellCheck={false} value={credentials[field.key]??''} onChange={event=>setCredentials({...credentials,[field.key]:event.target.value})}/>}</label>)}
     <Button type="submit">{busy?'Salvando…':connection?'Salvar novas credenciais':'Salvar conexão'}</Button>
-  </fieldset></form>;
+  </fieldset></form></>;
 }
 export default function Connections({ workspace,providers,initial,origin }: { workspace: string; providers: Provider[]; initial: Connection[] | null; origin: string }) {
   const [connections,setConnections]=useState(initial??[]); const [busy,setBusy]=useState(false); const [error,setError]=useState(''); const [success,setSuccess]=useState('');

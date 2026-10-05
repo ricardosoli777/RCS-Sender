@@ -151,6 +151,13 @@ td small { display: block; color: #a1a1aa; margin-top: 5px; overflow-wrap: anywh
 .journeyNodeHelp { border-left: 3px solid #a855f7; padding-left: 12px; margin-bottom: 16px; }
 .journeyNodeHelp p,.journeyHelp { font-size: 13px; }
 .integrationConnection { padding-block: 20px; border-top: 1px solid #27272f; overflow-wrap: anywhere; }
+.providerGuide { margin: 16px 0; padding: 14px 16px; border: 1px solid #583176; border-radius: 10px; background: #18131f; }
+.providerGuide summary { color: #e9d5ff; }
+.providerGuide p,.providerGuide li { font-size: 13px; line-height: 1.6; }
+.providerGuide ol { padding-left: 22px; margin-bottom: 12px; }
+.providerGuide li { margin-block: 8px; }
+.providerGuide code { color: #f0abfc; font-family: var(--font-mono); font-size: 11px; overflow-wrap: anywhere; }
+.providerGuideLinks { margin-bottom: 0; }
 .integrationConnection label { display: grid; gap: 8px; min-width: 0; }
 .integrationConnection input { min-width: 0; }
 details summary { cursor: pointer; padding-block: 12px; font-weight: 600; }
