@@ -17,7 +17,7 @@ export const conditionHelp: Record<string,string> = {
   contact: 'Use name para o nome ou opted_out para a opção de não receber mensagens. Exemplo: name → Existe.',
   lead_score: 'No campo, use score. Compare com um valor do tipo Número. Exemplo: Maior ou igual a 50.',
   tag: 'No campo, use tags; em Comparação, Contém; no valor do tipo Texto, informe a tag, como interessado.',
-  message_event: 'No campo, use um evento da última mensagem, como message.read; em Comparação, Existe. Para esperar uma leitura, marque Aguardar o evento e defina o prazo. Sem essa opção, a regra é avaliada na chegada.',
+  message_event: 'Escolha o evento da última mensagem: leitura, resposta, clique em link ou entrega. Use Existe e marque Aguardar o evento para esperar pelo retorno do lead.',
   custom_field: 'Informe no campo a chave de um campo personalizado já cadastrado no contato e compare com o valor esperado.',
   journey_context: 'Informe uma chave que já exista no contexto desta participação. Use esta opção somente quando sua integração já fornecer esse dado.',
 };
