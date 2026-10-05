@@ -21,12 +21,13 @@ def private_write(path, content):
         stream.write(content)
 
 
-def wait_service(name):
+def wait_service(name, image=None):
     for _ in range(90):
         ids = call("docker", "ps", "-q", "--filter", f"label=com.docker.swarm.service.name={name}").split()
         if ids:
-            state = json.loads(call("docker", "inspect", ids[0]))[0]["State"]
-            if state.get("Health", {}).get("Status") == "healthy":
+            task = json.loads(call("docker", "inspect", ids[0]))[0]
+            state = task["State"]
+            if state.get("Health", {}).get("Status") == "healthy" and (image is None or task["Config"]["Image"] == image):
                 return ids[0]
         time.sleep(2)
     raise RuntimeError(f"Service did not become healthy: {name}")
@@ -116,8 +117,8 @@ def main():
               "state": "migrated", "production_env": str(env_path)}
     (root / "deployment.json").write_text(json.dumps(record, indent=2)+"\n")
     if args.activate:
-        subprocess.run(["docker", "service", "scale", target["stack"]+"_app=1"], check=True)
-        wait_service(target["stack"]+"_app")
+        subprocess.run(["docker", "service", "scale", "--detach=true", target["stack"]+"_app=1"], check=True)
+        wait_service(target["stack"]+"_app", image)
         record["state"] = "healthy"
         (root / "deployment.json").write_text(json.dumps(record, indent=2)+"\n")
         link = shared.parent / "current"

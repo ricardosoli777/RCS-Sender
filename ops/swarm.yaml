@@ -42,7 +42,7 @@ services:
     secrets: [rcs_runtime_env]
     networks: [internal, proxy]
     healthcheck:
-      test: [CMD, node, ops/swarm-health.mjs]
+      test: [CMD, node, '--env-file=/run/secrets/rcs_runtime_env', ops/swarm-health.mjs]
       interval: 20s
       timeout: 10s
       start_period: 90s
