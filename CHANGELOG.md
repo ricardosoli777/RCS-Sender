@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — ações de edição, salvamento e exclusão
+
+- Ações com ícones e nomes nas listas e detalhes de mensagens, campanhas e jornadas; atalhos de edição, salvamento explícito de jornadas e lixeira nos cards de carrossel e nas etapas.
+- Exclusão com confirmação e revisão esperada remove itens das listas, preservando versões, referências e histórico. Mensagens vinculadas e execuções em andamento são protegidas.
+- Migração 035 adiciona exclusão lógica; testes HTTP verificam isolamento, permissões, conflitos e rollback da auditoria, e E2E cobre editar, salvar e excluir pelas telas.
+
 ## 2026-10-04 — explicações no editor de jornadas
 
 - Cards de etapas com finalidade, instruções e exemplos na configuração; passos para preparar mensagens, conectar, validar, publicar, ativar e inscrever leads dentro do editor.

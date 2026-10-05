@@ -37,7 +37,7 @@ export class PgCampaignStore implements CampaignStore {
     return client.query("INSERT INTO audit_logs (workspace_id,actor_user_id,event,entity_type,entity_id,metadata) VALUES ($1,$2,$3,'campaign',$4,$5)",[context.workspace_id,context.user_id,event,campaign.id,JSON.stringify({ revision: campaign.revision,status: campaign.status })]);
   }
   private async locked(client: PoolClient,context: WorkspaceContext,id: string,expected: number) {
-    const row = (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE workspace_id=$1 AND id=$2 FOR UPDATE`,[context.workspace_id,id])).rows[0];
+    const row = (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2 FOR UPDATE`,[context.workspace_id,id])).rows[0];
     if (!row) throw new CampaignInputError('not_found'); if (row.status !== 'draft' || row.revision !== expected || row.revision >= 2147483647) throw new CampaignInputError('conflict'); return row;
   }
   create(context: WorkspaceContext,input: CampaignDraft) {
@@ -64,15 +64,15 @@ export class PgCampaignStore implements CampaignStore {
   list(context: WorkspaceContext,offset: number,status?: CampaignStatus) {
     return transaction(this.pool,async (client) => {
       await this.authorize(client,context);
-      const campaigns = (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE workspace_id=$1 AND ($2::text IS NULL OR status=$2) ORDER BY created_at,id LIMIT 50 OFFSET $3`,[context.workspace_id,status ?? null,offset])).rows;
-      const total = (await client.query<{ total: number }>('SELECT count(*)::int AS total FROM campaigns WHERE workspace_id=$1 AND ($2::text IS NULL OR status=$2)',[context.workspace_id,status ?? null])).rows[0]!.total; return { campaigns,total };
+      const campaigns = (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE deleted_at IS NULL AND workspace_id=$1 AND ($2::text IS NULL OR status=$2) ORDER BY created_at,id LIMIT 50 OFFSET $3`,[context.workspace_id,status ?? null,offset])).rows;
+      const total = (await client.query<{ total: number }>('SELECT count(*)::int AS total FROM campaigns WHERE deleted_at IS NULL AND workspace_id=$1 AND ($2::text IS NULL OR status=$2)',[context.workspace_id,status ?? null])).rows[0]!.total; return { campaigns,total };
     });
   }
-  get(context: WorkspaceContext,id: string) { return transaction(this.pool,async (client) => { await this.authorize(client,context); return (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE workspace_id=$1 AND id=$2`,[context.workspace_id,id])).rows[0] ?? null; }); }
+  get(context: WorkspaceContext,id: string) { return transaction(this.pool,async (client) => { await this.authorize(client,context); return (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2`,[context.workspace_id,id])).rows[0] ?? null; }); }
   review(context: WorkspaceContext,id: string): Promise<CampaignReview> {
     return transaction(this.pool,async (client) => {
       await this.authorize(client,context);
-      const campaign = (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE workspace_id=$1 AND id=$2 FOR SHARE`,[context.workspace_id,id])).rows[0]; if (!campaign) throw new CampaignInputError('not_found');
+      const campaign = (await client.query<Campaign>(`SELECT ${columns} FROM campaigns WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2 FOR SHARE`,[context.workspace_id,id])).rows[0]; if (!campaign) throw new CampaignInputError('not_found');
       const issues: string[] = []; if (campaign.status !== 'draft') issues.push('campaign_not_draft');
       if (!campaign.agent_id) issues.push('agent_missing');
       const connection = campaign.provider_connection_id ? (await client.query<{ provider_id: string; status: string; external_agent_id: string | null; revision: string; ciphertext: string | null }>('SELECT p.provider_id,p.status,p.external_agent_id,EXTRACT(EPOCH FROM p.updated_at)::text AS revision,k.ciphertext FROM provider_connections p LEFT JOIN provider_credentials k ON k.workspace_id=p.workspace_id AND k.connection_id=p.id WHERE p.workspace_id=$1 AND p.id=$2 FOR SHARE OF p',[context.workspace_id,campaign.provider_connection_id])).rows[0] : null;

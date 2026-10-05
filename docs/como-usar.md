@@ -26,6 +26,10 @@ Confira as pendências e separe simulação de despacho real. Preparar a audiên
 
 ## Jornada
 
+As listas de **Mensagens**, **Campanhas** e **Jornadas** mostram uma coluna **Ações**, com lápis **Editar** e lixeira **Excluir**. Editar abre diretamente o formulário. Mensagens e cards são salvos em **Salvar nova versão**; campanhas usam **Salvar rascunho**. Jornadas salvam automaticamente e também têm **Salvar rascunho** no topo do editor.
+
+Excluir pede confirmação e retira o item da lista. Versões e histórico de execução permanecem preservados. Uma mensagem vinculada a campanha ou jornada precisa ser desvinculada ou ter o fluxo encerrado antes. Campanhas em execução devem ser encerradas/canceladas; jornadas ativas ou pausadas devem ser arquivadas. Os cards de um carrossel são editados nos seus campos e removidos pelo botão com lixeira **Remover cartão**; as alterações são persistidas ao salvar a mensagem.
+
 Jornada é um fluxo com várias etapas e mensagens. Em **Jornadas**, informe o nome e clique em **Criar jornada**. Adicione etapas pela paleta e clique em cada etapa para configurar no painel lateral.
 
 Na etapa **Mensagem**, escolha conexão, agente e versão ativa da mensagem. Na etapa **Espera**, defina tempo ou evento. Conecte as saídas no canvas ou pelo seletor **Próxima etapa**. Exemplo: **Início → Mensagem de boas-vindas → Espera de 1 dia → Mensagem de oferta → Fim**.

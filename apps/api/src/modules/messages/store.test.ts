@@ -117,4 +117,56 @@ describe('versioned messages SQL and HTTP on PostgreSQL WASM',() => {
       expect((await app.inject({ method: 'PATCH',url: `${base}/${id}/status`,headers,payload: { expectedVersion: 2,status: 'draft' } })).statusCode).toBe(403);
     } finally { await app.close(); }
   });
+  it('deletes library entries with scoped permissions, revision checks and preserved history',async () => {
+    const redis = { defineCommand: () => undefined,rateLimit: (_key: string,window: number,_max: number,_cont: boolean,_exp: boolean,callback: (error: null,value: number[]) => void) => callback(null,[1,window]) } as unknown as Redis;
+    const authStore = { findSession: async () => ({ id: alice.user_id,name: 'Alice',email: 'alice@example.test' }) } as unknown as AuthStore;
+    const app=createApp({db:pool,redis,authStore},{appUrl:'http://localhost:3000',secureCookies:false});
+    const headers={origin:'http://localhost:3000','x-rcs-request':'1',cookie:`rcs_session=${'a'.repeat(43)}`};
+    const base=`/workspaces/${alice.workspace_id}`;
+    try {
+      for(const [kind,payload,key] of [['messages',input,'message'],['campaigns',{name:'Draft',objective:'QA'},'campaign'],['journeys',{name:'Draft'},'journey']] as const){
+        const created=await app.inject({method:'POST',url:`${base}/${kind}`,headers,payload});expect(created.statusCode).toBe(201);
+        const id=created.json()[key].id;const url=`${base}/${kind}/${id}`;
+        expect((await app.inject({method:'DELETE',url,headers:{cookie:headers.cookie},payload:{expectedRevision:1}})).statusCode).toBe(403);
+        expect((await app.inject({method:'DELETE',url:`/workspaces/${bob.workspace_id}/${kind}/${id}`,headers,payload:{expectedRevision:1}})).statusCode).toBe(404);
+        expect((await app.inject({method:'DELETE',url,headers,payload:{expectedRevision:2}})).statusCode).toBe(409);
+        await database.query("UPDATE workspace_members SET role='viewer' WHERE workspace_id=$1",[alice.workspace_id]);
+        expect((await app.inject({method:'DELETE',url,headers,payload:{expectedRevision:1}})).statusCode).toBe(403);
+        await database.query("UPDATE workspace_members SET role='owner' WHERE workspace_id=$1",[alice.workspace_id]);
+        expect((await app.inject({method:'DELETE',url,headers,payload:{expectedRevision:1}})).statusCode).toBe(204);
+        expect((await app.inject({method:'GET',url,headers})).statusCode).toBe(404);
+        expect((await app.inject({method:'GET',url:`${base}/${kind}`,headers})).json().total).toBe(0);
+        expect((await database.query(`SELECT deleted_at FROM ${kind} WHERE id=$1`,[id])).rows[0]!.deleted_at).not.toBeNull();
+        expect((await app.inject({method:'DELETE',url,headers,payload:{expectedRevision:1}})).statusCode).toBe(404);
+      }
+      expect((await database.query('SELECT count(*)::int AS count FROM message_versions')).rows[0]!.count).toBe(1);
+      expect((await database.query("SELECT count(*)::int AS count FROM audit_logs WHERE event LIKE '%.deleted'")).rows[0]!.count).toBe(3);
+    }finally{await app.close();}
+  });
+  it('blocks deletion of referenced messages and active flows and rolls back on audit failure',async()=>{
+    const redis = { defineCommand: () => undefined,rateLimit: (_key: string,window: number,_max: number,_cont: boolean,_exp: boolean,callback: (error: null,value: number[]) => void) => callback(null,[1,window]) } as unknown as Redis;
+    const authStore = { findSession: async () => ({ id: alice.user_id,name:'Alice',email:'alice@example.test' }) } as unknown as AuthStore;
+    const app=createApp({db:pool,redis,authStore},{appUrl:'http://localhost:3000',secureCookies:false});
+    const headers={origin:'http://localhost:3000','x-rcs-request':'1',cookie:`rcs_session=${'a'.repeat(43)}`};const base=`/workspaces/${alice.workspace_id}`;
+    try{
+      const message=(await app.inject({method:'POST',url:`${base}/messages`,headers,payload:input})).json();
+      const campaign=(await app.inject({method:'POST',url:`${base}/campaigns`,headers,payload:{name:'Linked',objective:'QA',messageVersionId:message.current.id}})).json().campaign;
+      expect((await app.inject({method:'DELETE',url:`${base}/messages/${message.message.id}`,headers,payload:{expectedRevision:1}})).statusCode).toBe(409);
+      await database.query("UPDATE campaigns SET status='running' WHERE id=$1",[campaign.id]);
+      expect((await app.inject({method:'DELETE',url:`${base}/campaigns/${campaign.id}`,headers,payload:{expectedRevision:1}})).statusCode).toBe(409);
+      const journey=(await app.inject({method:'POST',url:`${base}/journeys`,headers,payload:{name:'Flow'}})).json().journey;
+      expect((await app.inject({method:'POST',url:`${base}/journeys/${journey.id}/publish`,headers,payload:{expectedRevision:1}})).statusCode).toBe(201);
+      expect((await app.inject({method:'POST',url:`${base}/journeys/${journey.id}/control`,headers,payload:{expectedRevision:2,action:'activate'}})).statusCode).toBe(200);
+      expect((await app.inject({method:'DELETE',url:`${base}/journeys/${journey.id}`,headers,payload:{expectedRevision:3}})).statusCode).toBe(409);
+      expect((await app.inject({method:'POST',url:`${base}/journeys/${journey.id}/control`,headers,payload:{expectedRevision:3,action:'archive'}})).statusCode).toBe(200);
+      await database.exec("CREATE FUNCTION reject_delete_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'audit unavailable'; END $$; CREATE TRIGGER reject_delete_audit BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION reject_delete_audit()");
+      try{
+        expect((await app.inject({method:'DELETE',url:`${base}/journeys/${journey.id}`,headers,payload:{expectedRevision:4}})).statusCode).toBe(503);
+        expect((await database.query('SELECT deleted_at FROM journeys WHERE id=$1',[journey.id])).rows[0]!.deleted_at).toBeNull();
+      }finally{await database.exec('DROP TRIGGER reject_delete_audit ON audit_logs; DROP FUNCTION reject_delete_audit()');}
+      expect((await app.inject({method:'DELETE',url:`${base}/journeys/${journey.id}`,headers,payload:{expectedRevision:4}})).statusCode).toBe(204);
+      expect((await database.query('SELECT count(*)::int AS count FROM journey_versions WHERE journey_id=$1',[journey.id])).rows[0]!.count).toBe(1);
+    }finally{await app.close();}
+  });
+
 });

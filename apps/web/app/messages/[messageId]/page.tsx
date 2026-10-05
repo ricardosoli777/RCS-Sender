@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EntityActions from '../../entity-actions';
 import AppShell,{ workspaceHref } from '../../app-shell';
 import { apiGet,workspaceData,WorkspaceUnavailable } from '../../workspace';
 import { Badge,Card } from '../../ui';
@@ -23,9 +24,9 @@ export default async function MessagePage({ params,searchParams }: { params: Pro
   const base = workspaceHref(`/messages/${messageId}`,data.selected.id);
   return <AppShell data={data} active="/messages"><Link href={workspaceHref('/messages',data.selected.id)}>← Biblioteca de mensagens</Link>
     {detail ? <><div className="pageHeading"><div><p className="eyebrow">MENSAGEM REUTILIZÁVEL</p><h1>{detail.message.name}</h1><p>{purposeNames[detail.message.purpose]} · Versão atual {detail.message.current_version} · {detail.message.active_version ? `Ativa: ${detail.message.active_version}` : 'Sem versão ativa'}</p></div><Badge>{statusNames[detail.message.status]}</Badge></div>
-      <div className="settingsGrid"><Card><h2>Controle de versões</h2><p>Ativar seleciona a versão atual para reutilização. Duplicar copia a versão atual, inclusive durante uma consulta histórica. Editar uma mensagem preserva a versão ativa até você ativar a nova versão.</p>
+      {data.context.permissions.includes('messages.manage') && <EntityActions workspace={data.selected.id} kind="messages" id={detail.message.id} name={detail.message.name} revision={detail.message.current_version} editHref="#entity-editor" canEdit={detail.message.status !== 'archived'} canDelete/>}<div className="settingsGrid"><Card><h2>Controle de versões</h2><p>Ativar seleciona a versão atual para reutilização. Duplicar copia a versão atual, inclusive durante uma consulta histórica. Editar uma mensagem preserva a versão ativa até você ativar a nova versão.</p>
         <MessageActions key={`${data.selected.id}:${messageId}:${detail.message.current_version}:${detail.message.status}:${detail.message.active_version}`} workspaceId={data.selected.id} detail={detail} canManage={data.context.permissions.includes('messages.manage')} />
-        <p>Envios ainda não estão disponíveis.</p></Card>
+        <p>Use esta mensagem em campanhas ou etapas de jornadas depois de ativar sua versão.</p></Card>
         <Card><h2>Consultar conteúdo</h2><form method="get" className="memberForm"><input type="hidden" name="workspace" value={data.selected.id} /><label>Número da versão<input name="version" type="number" min={1} max={detail.message.current_version} step={1} defaultValue={requested ?? detail.message.current_version} required /></label><button type="submit">Consultar versão</button></form>
           <nav className="memberActions messageActions" aria-label="Versões da mensagem"><Link href={base}>Versão atual</Link>{detail.active && <Link href={`${base}&version=${detail.active.version}`}>Versão ativa</Link>}</nav>
           {version ? <><h3>{version.name} · Versão {version.version}</h3><p>{purposeNames[version.purpose]}{version.version !== detail.message.current_version ? ' · Consulta histórica, sem alteração do estado atual.' : ''}</p><MessagePreview workspaceId={data.selected.id} content={version.content} /></> : <p role="alert">Não foi possível carregar esta versão. Confira o número e tente novamente.</p>}

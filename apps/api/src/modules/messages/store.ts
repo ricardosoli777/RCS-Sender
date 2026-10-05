@@ -50,7 +50,7 @@ export class PgMessageStore implements MessageStore {
   revise(context: WorkspaceContext,id: string,expectedVersion: number,input: MessageInput) {
     return transaction(this.pool,async (client) => {
       await this.authorize(client,context,true);
-      const current = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE workspace_id=$1 AND id=$2 FOR UPDATE`,[context.workspace_id,id])).rows[0];
+      const current = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2 FOR UPDATE`,[context.workspace_id,id])).rows[0];
       if (!current) throw new MessageInputError('not_found');
       if (current.current_version !== expectedVersion || current.status === 'archived') throw new MessageInputError('conflict');
       if (current.current_version >= 2147483647) throw new MessageInputError('conflict');
@@ -63,7 +63,7 @@ export class PgMessageStore implements MessageStore {
   changeStatus(context: WorkspaceContext,id: string,expectedVersion: number,status: MessageStatus) {
     return transaction(this.pool,async (client) => {
       await this.authorize(client,context,true);
-      const current = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE workspace_id=$1 AND id=$2 FOR UPDATE`,[context.workspace_id,id])).rows[0];
+      const current = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2 FOR UPDATE`,[context.workspace_id,id])).rows[0];
       if (!current) throw new MessageInputError('not_found');
       if (current.current_version !== expectedVersion || (current.status === 'archived' && status === 'active')) throw new MessageInputError('conflict');
       const message = (await client.query<Message>(`UPDATE messages SET status=$3,active_version=$4,updated_by_user_id=$5,updated_at=now()
@@ -74,15 +74,15 @@ export class PgMessageStore implements MessageStore {
   list(context: WorkspaceContext,offset: number,status?: MessageStatus) {
     return transaction(this.pool,async (client) => {
       await this.authorize(client,context);
-      const messages = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE workspace_id=$1 AND ($2::text IS NULL OR status=$2) ORDER BY created_at,id LIMIT 50 OFFSET $3`,[context.workspace_id,status ?? null,offset])).rows;
-      const total = (await client.query<{ total: number }>('SELECT count(*)::int AS total FROM messages WHERE workspace_id=$1 AND ($2::text IS NULL OR status=$2)',[context.workspace_id,status ?? null])).rows[0]!.total;
+      const messages = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE deleted_at IS NULL AND workspace_id=$1 AND ($2::text IS NULL OR status=$2) ORDER BY created_at,id LIMIT 50 OFFSET $3`,[context.workspace_id,status ?? null,offset])).rows;
+      const total = (await client.query<{ total: number }>('SELECT count(*)::int AS total FROM messages WHERE deleted_at IS NULL AND workspace_id=$1 AND ($2::text IS NULL OR status=$2)',[context.workspace_id,status ?? null])).rows[0]!.total;
       return { messages,total };
     });
   }
   get(context: WorkspaceContext,id: string) {
     return transaction(this.pool,async (client) => {
       await this.authorize(client,context);
-      const message = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE workspace_id=$1 AND id=$2`,[context.workspace_id,id])).rows[0];
+      const message = (await client.query<Message>(`SELECT ${columns} FROM messages WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2`,[context.workspace_id,id])).rows[0];
       return message ? this.detail(client,context,message) : null;
     });
   }
