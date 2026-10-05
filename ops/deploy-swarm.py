@@ -90,9 +90,19 @@ def main():
         "RCS_POSTGRES_SECRET": "rcssender_postgres_v1", "RCS_REDIS_SECRET": "rcssender_redis_v1",
         "RCS_RUNTIME_SECRET": "rcssender_runtime_v1",
     }
-    rendered = subprocess.check_output(["docker", "stack", "config", "-c", "ops/swarm.yaml"], env=env)
+    # Docker 20.10 has no `stack config`; render only our known deployment vars.
+    # Preserve $$ so stack deploy performs its normal shell-dollar escaping.
+    def variable(match):
+        key, fallback = match.group(1), match.group(2)
+        if key in env:
+            return env[key]
+        if fallback is not None:
+            return fallback
+        raise ValueError("Missing deployment variable: "+key)
+    rendered = re.sub(r"\$\{([A-Z0-9_]+)(?::-([^}]*))?\}", variable, Path("ops/swarm.yaml").read_text()).encode()
     rendered_path = shared / "stack-rendered.yaml"
     rendered_path.write_bytes(rendered)
+    subprocess.run(["docker", "compose", "-f", str(rendered_path), "config", "--quiet"], check=True)
     subprocess.run(["docker", "stack", "deploy", "--resolve-image", "never", "-c", str(rendered_path), target["stack"]], check=True)
     wait_service(target["stack"]+"_postgres")
     wait_service(target["stack"]+"_redis")

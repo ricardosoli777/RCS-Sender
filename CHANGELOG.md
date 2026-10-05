@@ -9,6 +9,7 @@
 - Smoke público isolado e backup/restore de Swarm, sem chamadas RCS ou credenciais versionadas.
 - Atributos Git fixam LF nos scripts e manifests Linux, inclusive no arquivo de release criado no Windows.
 - Runner nativo resolve Vitest pelo pacote da API, funcionando em instalação limpa Linux sem depender de hoisting incidental do Windows.
+- Compatibilidade da implantação com Docker 20.10; releases apenas de operação/documentação reutilizam binários verificados sob guarda de diff, com revisão de origem registrada.
 
 ## 2026-10-04 — conclusão da construção local das waves
 
