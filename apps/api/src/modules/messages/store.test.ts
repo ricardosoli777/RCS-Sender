@@ -136,11 +136,11 @@ describe('versioned messages SQL and HTTP on PostgreSQL WASM',() => {
         expect((await app.inject({method:'DELETE',url,headers,payload:{expectedRevision:1}})).statusCode).toBe(204);
         expect((await app.inject({method:'GET',url,headers})).statusCode).toBe(404);
         expect((await app.inject({method:'GET',url:`${base}/${kind}`,headers})).json().total).toBe(0);
-        expect((await database.query(`SELECT deleted_at FROM ${kind} WHERE id=$1`,[id])).rows[0]!.deleted_at).not.toBeNull();
+        expect((await database.query<{ deleted_at: Date | null }>(`SELECT deleted_at FROM ${kind} WHERE id=$1`,[id])).rows[0]!.deleted_at).not.toBeNull();
         expect((await app.inject({method:'DELETE',url,headers,payload:{expectedRevision:1}})).statusCode).toBe(404);
       }
-      expect((await database.query('SELECT count(*)::int AS count FROM message_versions')).rows[0]!.count).toBe(1);
-      expect((await database.query("SELECT count(*)::int AS count FROM audit_logs WHERE event LIKE '%.deleted'")).rows[0]!.count).toBe(3);
+      expect((await database.query<{ count: number }>('SELECT count(*)::int AS count FROM message_versions')).rows[0]!.count).toBe(1);
+      expect((await database.query<{ count: number }>("SELECT count(*)::int AS count FROM audit_logs WHERE event LIKE '%.deleted'")).rows[0]!.count).toBe(3);
     }finally{await app.close();}
   });
   it('blocks deletion of referenced messages and active flows and rolls back on audit failure',async()=>{
@@ -162,10 +162,10 @@ describe('versioned messages SQL and HTTP on PostgreSQL WASM',() => {
       await database.exec("CREATE FUNCTION reject_delete_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'audit unavailable'; END $$; CREATE TRIGGER reject_delete_audit BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION reject_delete_audit()");
       try{
         expect((await app.inject({method:'DELETE',url:`${base}/journeys/${journey.id}`,headers,payload:{expectedRevision:4}})).statusCode).toBe(503);
-        expect((await database.query('SELECT deleted_at FROM journeys WHERE id=$1',[journey.id])).rows[0]!.deleted_at).toBeNull();
+        expect((await database.query<{ deleted_at: Date | null }>('SELECT deleted_at FROM journeys WHERE id=$1',[journey.id])).rows[0]!.deleted_at).toBeNull();
       }finally{await database.exec('DROP TRIGGER reject_delete_audit ON audit_logs; DROP FUNCTION reject_delete_audit()');}
       expect((await app.inject({method:'DELETE',url:`${base}/journeys/${journey.id}`,headers,payload:{expectedRevision:4}})).statusCode).toBe(204);
-      expect((await database.query('SELECT count(*)::int AS count FROM journey_versions WHERE journey_id=$1',[journey.id])).rows[0]!.count).toBe(1);
+      expect((await database.query<{ count: number }>('SELECT count(*)::int AS count FROM journey_versions WHERE journey_id=$1',[journey.id])).rows[0]!.count).toBe(1);
     }finally{await app.close();}
   });
 
