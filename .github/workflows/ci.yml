@@ -50,7 +50,9 @@ jobs:
       - run: pnpm test
       - run: pnpm test:native:domain
       - run: pnpm release:check
-      - run: bash -n ops/backup.sh ops/restore-drill.sh ops/native-backup-drill.sh
+      - run: bash -n ops/backup.sh ops/restore-drill.sh ops/native-backup-drill.sh ops/backup-swarm.sh
+      - run: python3 -m py_compile ops/vps.py ops/deploy-swarm.py ops/vps-smoke.py
+      - run: node --check ops/swarm-supervisor.mjs && node --check ops/swarm-health.mjs && node --check ops/swarm-edge-check.mjs
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4

@@ -5,6 +5,8 @@
 - Transporte SSH/SFTP Paramiko com credenciais fora do repositório e chave de host fixada; target não secreto rcssender.arkitekt.space.
 - Stack independente para Traefik existente, bancos privados, Docker Secrets, releases por commit e migração antes da ativação.
 - Supervisor dos processos API/web/worker/Caddy, healthcheck e contrato da borda para Cloudflare, cabeçalhos falsificados e callbacks.
+- Correção da categoria no PUT de mensagens, com regressão HTTP e assertiva E2E. Contrato da borda usa HTTP explícito para verificar Host e ordem de rejeição.
+- Smoke público isolado e backup/restore de Swarm, sem chamadas RCS ou credenciais versionadas.
 
 ## 2026-10-04 — conclusão da construção local das waves
 

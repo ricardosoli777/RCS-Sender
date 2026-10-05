@@ -42,7 +42,7 @@ export function registerMessageRoutes(app: FastifyInstance,service: MessageServi
       required: ['name','purpose','content','expectedVersion'],properties: { ...inputProperties,expectedVersion: version }
     } }
   },async (request) => service.revise(request.workspaceContext!,request.params.messageId,request.body.expectedVersion,
-    { name: request.body.name,purpose: request.body.purpose,content: request.body.content }));
+    { name: request.body.name,purpose: request.body.purpose,content: request.body.content,...(request.body.archetype===undefined?{}:{archetype:request.body.archetype}) }));
   app.patch<{ Params: { workspaceId: string; messageId: string }; Body: { expectedVersion: number; status: MessageStatus } }>(`${base}/:messageId/status`,{
     config: { permission: 'messages.manage' },schema: { params,body: { type: 'object',additionalProperties: false,required: ['expectedVersion','status'],properties: { expectedVersion: version,status: statusSchema } } }
   },async (request) => service.changeStatus(request.workspaceContext!,request.params.messageId,request.body.expectedVersion,request.body.status));

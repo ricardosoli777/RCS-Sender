@@ -9,9 +9,9 @@
 }
 http://:8080 {
   @wrongHost not host {$RCS_DOMAIN}
-  respond @wrongHost 421
   @cloudflare client_ip {$RCS_CLOUDFLARE_CIDRS}
   route {
+  respond @wrongHost 421
   vars rcs_client_ip {client_ip}
   vars @cloudflare rcs_client_ip {http.request.header.CF-Connecting-IP}
   @callbacks path /webhooks/rcs/* /provider-media/*

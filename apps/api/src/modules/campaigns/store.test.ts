@@ -350,6 +350,19 @@ describe('campaign domain SQL and HTTP on PostgreSQL WASM',() => {
     const second=await messages.revise(alice,first.message.id,1,validateMessageInput({name:'Reminder',purpose:'transactional',archetype:'reminder',content:{type:'text',text:'Reminder'}}));expect(second.current.archetype).toBe('reminder');expect(second.active?.archetype).toBe('launch');expect(()=>validateMessageInput({name:'Invalid',purpose:'authentication',archetype:'offer',content:{type:'text',text:'Invalid'}})).toThrow();
     await expect(database.query("UPDATE message_versions SET archetype='offer' WHERE id=$1",[first.current.id])).rejects.toThrow('immutable');
   });
+  it('preserves and validates category changes through the message editing HTTP route',async()=>{
+    const redis={defineCommand:()=>undefined,rateLimit:(_key:string,window:number,_max:number,_cont:boolean,_exp:boolean,callback:(error:null,value:number[])=>void)=>callback(null,[1,window])} as unknown as Redis;
+    const authStore={findSession:async()=>({id:alice.user_id,name:'Alice',email:'alice@example.test'})} as unknown as AuthStore;
+    const app=createApp({db:pool,redis,authStore},{appUrl:'http://localhost:3000',secureCookies:false});
+    const headers={origin:'http://localhost:3000','x-rcs-request':'1',cookie:`rcs_session=${'a'.repeat(43)}`};const base=`/workspaces/${alice.workspace_id}/messages`;
+    try{
+      const created=await app.inject({method:'POST',url:base,headers,payload:{name:'Offer',purpose:'marketing',archetype:'offer',content:{type:'text',text:'Original'}}});expect(created.statusCode).toBe(201);const id=created.json().message.id;
+      await app.inject({method:'PATCH',url:`${base}/${id}/status`,headers,payload:{expectedVersion:1,status:'active'}});
+      const updated=await app.inject({method:'PUT',url:`${base}/${id}`,headers,payload:{name:'Launch',purpose:'marketing',archetype:'launch',content:{type:'text',text:'Updated'},expectedVersion:1}});
+      expect(updated.statusCode).toBe(200);expect(updated.json().current.archetype).toBe('launch');expect(updated.json().active.archetype).toBe('offer');
+      expect((await app.inject({method:'PUT',url:`${base}/${id}`,headers,payload:{name:'Invalid',purpose:'authentication',archetype:'offer',content:{type:'text',text:'Invalid'},expectedVersion:2}})).statusCode).toBe(400);
+    }finally{await app.close();}
+  });
   it('applies asynchronous eligibility once and ignores superseded requests and changed phone snapshots',async()=>{
     const f=await eventFixture();const row=(await database.query<{ciphertext:string;revision:string}>('SELECT k.ciphertext,EXTRACT(EPOCH FROM p.updated_at)::text AS revision FROM provider_connections p JOIN provider_credentials k ON k.connection_id=p.id')).rows[0]!;
     const version=credentialVersion(row.ciphertext,row.revision);const eligibility=new PgEligibilityStore(pool);const id=await eligibility.begin(alice,input.providerConnectionId!,f.contact,version,'+5511987654321');expect(id).toBeTruthy();
