@@ -18,4 +18,5 @@ __pycache__/
 .planning/validation-services.env
 .planning/infobip-*.go
 .planning/infobip-tree.json
+.planning/ci-*.json
 .planning/*-openapi.json
